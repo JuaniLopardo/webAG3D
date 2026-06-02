@@ -109,6 +109,7 @@
             <div class="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100 mt-2">
               <label class="block text-sm font-bold text-blue-900 mb-1">Subir Imágenes (Opcional)</label>
               <input type="file" id="prod-fotos" multiple accept="image/*" class="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition" />
+              <div id="preview-fotos-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4"></div>
               <p class="text-xs text-blue-700 mt-2">Puedes seleccionar varias fotos a la vez. Si subes fotos nuevas, reemplazarán a las anteriores.</p>
             </div>
 
@@ -128,6 +129,15 @@
             <button type="submit" id="btn-guardar-producto" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Guardar Producto</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Visor de Imagen (para el catálogo) -->
+    <div id="modal-visor" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-[60] p-4" onclick="this.classList.replace('flex','hidden')">
+      <div class="relative max-w-4xl w-full flex flex-col items-center">
+        <img id="img-visor" src="" class="max-h-[85vh] rounded-lg shadow-2xl border-4 border-white" />
+        <p id="txt-visor" class="text-white mt-4 text-xl font-bold bg-black bg-opacity-50 px-4 py-2 rounded-full"></p>
+        <button class="absolute top-0 right-0 text-white text-4xl p-4">&times;</button>
       </div>
     </div>
 
@@ -181,10 +191,56 @@
         const inputMin = document.getElementById('prod-min') as HTMLInputElement;
         const inputPrecio = document.getElementById('prod-precio') as HTMLInputElement;
         const inputFotos = document.getElementById('prod-fotos') as HTMLInputElement; // El nuevo input
+        const previewContainer = document.getElementById('preview-fotos-container') as HTMLDivElement;
 
         const variablesContainer = document.getElementById('variables-container') as HTMLDivElement;
         const btnAddVar = document.getElementById('btn-add-var') as HTMLButtonElement;
         let listaProductos: any[] = [];
+        let fotosParaSubir: { file?: File, url: string, variableAsociada: string }[] = [];
+
+        function renderizarPreviews() {
+          previewContainer.innerHTML = '';
+          const keys = Array.from(document.querySelectorAll('.var-key')).map(i => (i as HTMLInputElement).value).filter(v => v !== '');
+          
+          fotosParaSubir.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'relative group border border-gray-200 rounded-lg p-1 bg-white';
+            
+            let options = `<option value="">Sin variable</option>`;
+            keys.forEach(k => {
+              options += `<option value="${k}" ${item.variableAsociada === k ? 'selected' : ''}>${k}</option>`;
+            });
+
+            div.innerHTML = `
+              <img src="${item.url}" class="w-full h-24 object-cover rounded" />
+              <select data-index="${index}" class="select-var-foto mt-1 w-full text-[10px] p-1 border rounded">
+                ${options}
+              </select>
+              <button type="button" data-index="${index}" class="btn-remove-foto absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-lg">×</button>
+            `;
+            
+            div.querySelector('.select-var-foto')?.addEventListener('change', (e) => {
+              const target = e.target as HTMLSelectElement;
+              fotosParaSubir[parseInt(target.dataset.index!)].variableAsociada = target.value;
+            });
+
+            div.querySelector('.btn-remove-foto')?.addEventListener('click', (e) => {
+              const target = e.currentTarget as HTMLButtonElement;
+              fotosParaSubir.splice(parseInt(target.dataset.index!), 1);
+              renderizarPreviews();
+            });
+
+            previewContainer.appendChild(div);
+          });
+        }
+
+        inputFotos.addEventListener('change', () => {
+          if (!inputFotos.files) return;
+          Array.from(inputFotos.files).forEach(file => {
+            fotosParaSubir.push({ file, url: URL.createObjectURL(file), variableAsociada: '' });
+          });
+          renderizarPreviews();
+        });
 
         function crearFilaDeVariable(clave = '', valores: string[] = []) {
           const row = document.createElement('div');
@@ -197,11 +253,21 @@
             </button>
           `;
           row.querySelector('.btn-del-var')?.addEventListener('click', () => row.remove());
+          row.querySelector('.var-key')?.addEventListener('input', () => renderizarPreviews());
           variablesContainer.appendChild(row);
         }
         btnAddVar.addEventListener('click', () => crearFilaDeVariable());
 
         const productosContainer = document.getElementById('admin-productos-container') as HTMLElement;
+        const visorModal = document.getElementById('modal-visor') as HTMLDivElement;
+        const visorImg = document.getElementById('img-visor') as HTMLImageElement;
+        const visorTxt = document.getElementById('txt-visor') as HTMLParagraphElement;
+
+        function abrirVisor(url: string, titulo: string) {
+          visorImg.src = url;
+          visorTxt.textContent = titulo;
+          visorModal.classList.replace('hidden', 'flex');
+        }
 
         async function cargarProductos() {
           const { data: productos, error } = await supabase.from('productos').select('*').order('id');
@@ -211,13 +277,18 @@
           if (listaProductos.length > 0) {
             productosContainer.innerHTML = listaProductos.map(prod => {
               const keysVariables = Object.keys(prod.variables || {});
+              const fotosArray = Array.isArray(prod.fotos) ? prod.fotos : [];
+              
               const textoVariables = keysVariables.length > 0 
-                ? keysVariables.map(k => `<span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded capitalize">${k}</span>`).join(' ') 
+                ? keysVariables.map(k => {
+                    const tieneFoto = fotosArray.some((f: any) => f.variableAsociada === k);
+                    return `<button class="btn-ver-var px-2 py-1 rounded text-xs capitalize transition ${tieneFoto ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 font-bold' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}" data-prod-id="${prod.id}" data-var-key="${k}" ${!tieneFoto ? 'disabled' : ''}>${k}</button>`;
+                  }).join(' ') 
                 : '<span class="text-gray-400 text-xs italic">Ninguna</span>';
               
-              // Mostramos la primera foto si existe, si no, un cuadro gris
-              const miniatura = (prod.fotos && prod.fotos.length > 0) 
-                ? `<img src="${prod.fotos[0]}" class="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />` 
+              const miniaturaUrl = (fotosArray.length > 0) ? (typeof fotosArray[0] === 'string' ? fotosArray[0] : fotosArray[0].url) : null;
+              const miniatura = miniaturaUrl 
+                ? `<img src="${miniaturaUrl}" class="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />` 
                 : `<div class="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xs text-gray-400">Sin img</div>`;
 
               return `
@@ -247,6 +318,21 @@
               });
             });
 
+            document.querySelectorAll('.btn-ver-var').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const prodId = target.dataset.prodId;
+                const varKey = target.dataset.varKey;
+                const prod = listaProductos.find(p => p.id.toString() === prodId);
+                if (prod && prod.fotos) {
+                  const foto = prod.fotos.find((f: any) => f.variableAsociada === varKey);
+                  if (foto) {
+                    abrirVisor(foto.url, `${prod.titulo} - ${varKey}`);
+                  }
+                }
+              });
+            });
+
             document.querySelectorAll('.btn-editar').forEach(btn => {
               btn.addEventListener('click', (e) => {
                 const target = e.target as HTMLButtonElement;
@@ -261,6 +347,14 @@
                   inputMin.value = productoAEditar.cantidad_minima;
                   inputPrecio.value = productoAEditar.precio || '';
                   inputFotos.value = ''; // Limpiamos el input de fotos
+                  
+                  // Cargar fotos existentes para previsualización
+                  fotosParaSubir = (productoAEditar.fotos || []).map((f: any) => (
+                    typeof f === 'string' 
+                    ? { url: f, variableAsociada: '' } 
+                    : { url: f.url, variableAsociada: f.variableAsociada || '' }
+                  ));
+                  renderizarPreviews();
                   
                   variablesContainer.innerHTML = '';
                   if (productoAEditar.variables) {
@@ -285,6 +379,8 @@
           formProducto.reset();
           inputId.value = ''; 
           inputFotos.value = '';
+          fotosParaSubir = [];
+          previewContainer.innerHTML = '';
           variablesContainer.innerHTML = '';
           mensajeModal.textContent = '';
           modal.classList.remove('hidden');
@@ -306,31 +402,35 @@
 
           try {
             // 1. Manejo de Fotos
-            let urlsFinales: string[] = [];
-            const productoExistente = listaProductos.find(p => p.id.toString() === inputId.value);
+            let fotosFinales: { url: string, variableAsociada: string }[] = [];
             
-            if (inputFotos.files && inputFotos.files.length > 0) {
+            if (fotosParaSubir.length > 0) {
               mensajeModal.textContent = 'Subiendo imágenes...';
               mensajeModal.className = 'text-sm font-semibold text-center mt-4 h-4 text-blue-500';
               
-              for (const archivo of Array.from(inputFotos.files)) {
-                // Generamos un nombre único para evitar que se pisen si se llaman igual
-                const extension = archivo.name.split('.').pop();
-                const nombreUnico = `${Date.now()}-${Math.random().toString(36).substring(2)}.${extension}`;
-                
-                // Subimos a Supabase
-                const { error: errorSubida } = await supabase.storage.from('productos').upload(nombreUnico, archivo);
-                if (errorSubida) throw new Error('No se pudo subir la imagen: ' + errorSubida.message);
-                
-                // Obtenemos el link público y lo guardamos
-                const { data: { publicUrl } } = supabase.storage.from('productos').getPublicUrl(nombreUnico);
-                urlsFinales.push(publicUrl);
+              for (const item of fotosParaSubir) {
+                if (item.file) {
+                  const extension = item.file.name.split('.').pop();
+                  const nombreUnico = `${Date.now()}-${Math.random().toString(36).substring(2)}.${extension}`;
+                  
+                  const { error: errorSubida } = await supabase.storage.from('productos').upload(nombreUnico, item.file);
+                  if (errorSubida) throw new Error('No se pudo subir la imagen: ' + errorSubida.message);
+                  
+                  const { data: { publicUrl } } = supabase.storage.from('productos').getPublicUrl(nombreUnico);
+                  fotosFinales.push({ 
+                    url: publicUrl, 
+                    variableAsociada: item.variableAsociada 
+                  });
+                } else {
+                  // Ya era una URL existente de Supabase
+                  fotosFinales.push({ 
+                    url: item.url, 
+                    variableAsociada: item.variableAsociada 
+                  });
+                }
               }
-            } else {
-              // Si no seleccionó fotos nuevas, conservamos las que ya tenía
-              urlsFinales = productoExistente ? (productoExistente.fotos || []) : [];
             }
-
+            
             mensajeModal.textContent = 'Guardando datos...';
 
             // 2. Empaquetar Variables
@@ -351,7 +451,7 @@
               cantidad_minima: parseInt(inputMin.value),
               precio: parseFloat(inputPrecio.value) || 0,
               variables: objetoVariables,
-              fotos: urlsFinales // Inyectamos el array de URLs
+              fotos: fotosFinales // Inyectamos el array de objetos {url, variableAsociada}
             };
 
             // 4. Enviar a base de datos
