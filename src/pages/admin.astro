@@ -1,0 +1,391 @@
+---
+// src/pages/admin.astro
+---
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Panel de Administración - AG3D</title>
+  </head>
+  <body class="bg-gray-100 text-gray-800 font-sans flex h-screen overflow-hidden relative">
+    
+    <aside class="w-64 bg-gray-900 text-white flex flex-col transition-all shrink-0">
+      <div class="p-6 border-b border-gray-800">
+        <h2 class="text-2xl font-bold tracking-wider text-blue-400">AG3D Admin</h2>
+      </div>
+      
+      <nav class="flex-1 p-4 space-y-2">
+        <button id="tab-pedidos" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition">
+          📦 Gestión de Pedidos
+        </button>
+        <button id="tab-productos" class="w-full text-left px-4 py-3 rounded-lg bg-blue-600 text-white font-medium transition">
+          🏷️ Catálogo (CRUD)
+        </button>
+        <button id="tab-usuarios" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition">
+          👥 Clientes Registrados
+        </button>
+      </nav>
+
+      <div class="p-4 border-t border-gray-800">
+        <a href="/" class="block w-full text-center px-4 py-2 mb-2 text-sm text-gray-400 hover:text-white transition">Ver sitio web</a>
+        <button id="btn-logout" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+          Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto bg-gray-50 p-8">
+      
+      <section id="section-pedidos" class="hidden">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h1>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <p class="text-gray-500 animate-pulse">Cargando base de datos...</p>
+        </div>
+      </section>
+
+      <section id="section-productos" class="block">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">Catálogo de Productos</h1>
+          <button id="btn-nuevo-producto" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+            + Nuevo Producto
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th class="p-4 font-semibold w-16">Foto</th>
+                  <th class="p-4 font-semibold">Producto</th>
+                  <th class="p-4 font-semibold">Variables</th>
+                  <th class="p-4 font-semibold text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-productos-container" class="divide-y divide-gray-200">
+                <tr><td colspan="4" class="p-4 text-center text-gray-500 animate-pulse">Cargando catálogo...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-usuarios" class="hidden">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Directorio de Clientes</h1>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <p class="text-gray-500 animate-pulse">Cargando base de datos...</p>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="modal-producto" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col items-center justify-center z-50 px-4 transition-opacity">
+      <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h3 id="modal-producto-titulo" class="text-xl font-bold text-gray-900 mb-6">Agregar Producto</h3>
+        
+        <form id="form-producto" class="space-y-4">
+          <input type="hidden" id="prod-id" />
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Título del Producto</label>
+              <input type="text" id="prod-titulo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea id="prod-desc" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad Mínima</label>
+              <input type="number" id="prod-min" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio (Opcional)</label>
+              <input type="number" id="prod-precio" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div class="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100 mt-2">
+              <label class="block text-sm font-bold text-blue-900 mb-1">Subir Imágenes (Opcional)</label>
+              <input type="file" id="prod-fotos" multiple accept="image/*" class="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition" />
+              <p class="text-xs text-blue-700 mt-2">Puedes seleccionar varias fotos a la vez. Si subes fotos nuevas, reemplazarán a las anteriores.</p>
+            </div>
+
+            <div class="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
+              <div class="flex justify-between items-center mb-3">
+                <label class="block text-sm font-bold text-gray-800">Variables Opcionales</label>
+                <button type="button" id="btn-add-var" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-md font-bold transition">+ Agregar Variable</button>
+              </div>
+              <div id="variables-container" class="space-y-3"></div>
+            </div>
+          </div>
+
+          <p id="modal-prod-mensaje" class="text-sm font-semibold text-center mt-4 h-4"></p>
+
+          <div class="mt-8 flex justify-end gap-3 border-t border-gray-200 pt-4">
+            <button type="button" id="btn-cerrar-modal" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
+            <button type="submit" id="btn-guardar-producto" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Guardar Producto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // @ts-ignore
+      import { supabase } from '../lib/supabase';
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+
+        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+        if (!perfil || perfil.rol !== 'admin') { window.location.href = '/dashboard'; return; }
+
+        // Navegación
+        const tabs = {
+          pedidos: { btn: document.getElementById('tab-pedidos') as HTMLButtonElement, sec: document.getElementById('section-pedidos') as HTMLElement },
+          productos: { btn: document.getElementById('tab-productos') as HTMLButtonElement, sec: document.getElementById('section-productos') as HTMLElement },
+          usuarios: { btn: document.getElementById('tab-usuarios') as HTMLButtonElement, sec: document.getElementById('section-usuarios') as HTMLElement }
+        };
+
+        function switchTab(activeKey: string) {
+          Object.entries(tabs).forEach(([key, elements]) => {
+            if (key === activeKey) {
+              elements.btn.className = 'w-full text-left px-4 py-3 rounded-lg bg-blue-600 text-white font-medium transition';
+              elements.sec.classList.remove('hidden');
+              elements.sec.classList.add('block');
+            } else {
+              elements.btn.className = 'w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition';
+              elements.sec.classList.remove('block');
+              elements.sec.classList.add('hidden');
+            }
+          });
+        }
+        tabs.pedidos.btn.addEventListener('click', () => switchTab('pedidos'));
+        tabs.productos.btn.addEventListener('click', () => switchTab('productos'));
+        tabs.usuarios.btn.addEventListener('click', () => switchTab('usuarios'));
+
+        // Elementos CRUD
+        const modal = document.getElementById('modal-producto') as HTMLDivElement;
+        const btnNuevo = document.getElementById('btn-nuevo-producto') as HTMLButtonElement;
+        const btnCerrarModal = document.getElementById('btn-cerrar-modal') as HTMLButtonElement;
+        const formProducto = document.getElementById('form-producto') as HTMLFormElement;
+        const mensajeModal = document.getElementById('modal-prod-mensaje') as HTMLParagraphElement;
+        const btnGuardar = document.getElementById('btn-guardar-producto') as HTMLButtonElement;
+        const modalTitulo = document.getElementById('modal-producto-titulo') as HTMLHeadingElement;
+
+        const inputId = document.getElementById('prod-id') as HTMLInputElement;
+        const inputTitulo = document.getElementById('prod-titulo') as HTMLInputElement;
+        const inputDesc = document.getElementById('prod-desc') as HTMLTextAreaElement;
+        const inputMin = document.getElementById('prod-min') as HTMLInputElement;
+        const inputPrecio = document.getElementById('prod-precio') as HTMLInputElement;
+        const inputFotos = document.getElementById('prod-fotos') as HTMLInputElement; // El nuevo input
+
+        const variablesContainer = document.getElementById('variables-container') as HTMLDivElement;
+        const btnAddVar = document.getElementById('btn-add-var') as HTMLButtonElement;
+        let listaProductos: any[] = [];
+
+        function crearFilaDeVariable(clave = '', valores: string[] = []) {
+          const row = document.createElement('div');
+          row.className = 'flex gap-2 items-start var-row bg-gray-50 p-2 rounded border border-gray-200';
+          row.innerHTML = `
+            <input type="text" class="var-key w-1/3 px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm font-medium" placeholder="Ej. Talles" value="${clave}" />
+            <input type="text" class="var-values flex-1 px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ej. S, M, L, XL" value="${valores.join(', ')}" />
+            <button type="button" class="btn-del-var text-gray-400 hover:text-red-500 p-1.5 transition" title="Eliminar variable">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          `;
+          row.querySelector('.btn-del-var')?.addEventListener('click', () => row.remove());
+          variablesContainer.appendChild(row);
+        }
+        btnAddVar.addEventListener('click', () => crearFilaDeVariable());
+
+        const productosContainer = document.getElementById('admin-productos-container') as HTMLElement;
+
+        async function cargarProductos() {
+          const { data: productos, error } = await supabase.from('productos').select('*').order('id');
+          if (error) return;
+          listaProductos = productos || [];
+
+          if (listaProductos.length > 0) {
+            productosContainer.innerHTML = listaProductos.map(prod => {
+              const keysVariables = Object.keys(prod.variables || {});
+              const textoVariables = keysVariables.length > 0 
+                ? keysVariables.map(k => `<span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded capitalize">${k}</span>`).join(' ') 
+                : '<span class="text-gray-400 text-xs italic">Ninguna</span>';
+              
+              // Mostramos la primera foto si existe, si no, un cuadro gris
+              const miniatura = (prod.fotos && prod.fotos.length > 0) 
+                ? `<img src="${prod.fotos[0]}" class="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />` 
+                : `<div class="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xs text-gray-400">Sin img</div>`;
+
+              return `
+              <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                <td class="p-4">${miniatura}</td>
+                <td class="p-4">
+                  <p class="font-bold text-gray-900">${prod.titulo}</p>
+                  <p class="text-xs text-gray-500 font-mono">ID: #${prod.id}</p>
+                </td>
+                <td class="p-4 flex gap-1 flex-wrap">${textoVariables}</td>
+                <td class="p-4 text-right space-x-2">
+                  <button class="text-blue-600 hover:text-blue-800 font-semibold text-sm btn-editar" data-id="${prod.id}">Editar</button>
+                  <button class="text-red-600 hover:text-red-800 font-semibold text-sm btn-eliminar" data-id="${prod.id}">Borrar</button>
+                </td>
+              </tr>
+            `}).join('');
+
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+              btn.addEventListener('click', async (e) => {
+                const target = e.target as HTMLButtonElement;
+                const id = target.getAttribute('data-id');
+                if (confirm(`¿Estás seguro de borrar este producto?`)) {
+                  target.textContent = 'Borrando...';
+                  await supabase.from('productos').delete().eq('id', id);
+                  cargarProductos();
+                }
+              });
+            });
+
+            document.querySelectorAll('.btn-editar').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const target = e.target as HTMLButtonElement;
+                const id = target.getAttribute('data-id');
+                const productoAEditar = listaProductos.find(p => p.id.toString() === id);
+                
+                if(productoAEditar) {
+                  modalTitulo.textContent = 'Editar Producto';
+                  inputId.value = productoAEditar.id;
+                  inputTitulo.value = productoAEditar.titulo;
+                  inputDesc.value = productoAEditar.descripcion || '';
+                  inputMin.value = productoAEditar.cantidad_minima;
+                  inputPrecio.value = productoAEditar.precio || '';
+                  inputFotos.value = ''; // Limpiamos el input de fotos
+                  
+                  variablesContainer.innerHTML = '';
+                  if (productoAEditar.variables) {
+                    Object.entries(productoAEditar.variables).forEach(([clave, valores]) => {
+                      crearFilaDeVariable(clave, valores as string[]);
+                    });
+                  }
+                  
+                  mensajeModal.textContent = '';
+                  modal.classList.remove('hidden');
+                  modal.classList.add('flex');
+                }
+              });
+            });
+          }
+        }
+
+        cargarProductos();
+
+        btnNuevo.addEventListener('click', () => {
+          modalTitulo.textContent = 'Agregar Nuevo Producto';
+          formProducto.reset();
+          inputId.value = ''; 
+          inputFotos.value = '';
+          variablesContainer.innerHTML = '';
+          mensajeModal.textContent = '';
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        });
+
+        btnCerrarModal.addEventListener('click', () => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        });
+
+        // Evento: GUARDAR (CON SUBIDA DE IMÁGENES)
+        formProducto.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          btnGuardar.disabled = true;
+          btnGuardar.textContent = 'Procesando...';
+          mensajeModal.textContent = '';
+
+          try {
+            // 1. Manejo de Fotos
+            let urlsFinales: string[] = [];
+            const productoExistente = listaProductos.find(p => p.id.toString() === inputId.value);
+            
+            if (inputFotos.files && inputFotos.files.length > 0) {
+              mensajeModal.textContent = 'Subiendo imágenes...';
+              mensajeModal.className = 'text-sm font-semibold text-center mt-4 h-4 text-blue-500';
+              
+              for (const archivo of Array.from(inputFotos.files)) {
+                // Generamos un nombre único para evitar que se pisen si se llaman igual
+                const extension = archivo.name.split('.').pop();
+                const nombreUnico = `${Date.now()}-${Math.random().toString(36).substring(2)}.${extension}`;
+                
+                // Subimos a Supabase
+                const { error: errorSubida } = await supabase.storage.from('productos').upload(nombreUnico, archivo);
+                if (errorSubida) throw new Error('No se pudo subir la imagen: ' + errorSubida.message);
+                
+                // Obtenemos el link público y lo guardamos
+                const { data: { publicUrl } } = supabase.storage.from('productos').getPublicUrl(nombreUnico);
+                urlsFinales.push(publicUrl);
+              }
+            } else {
+              // Si no seleccionó fotos nuevas, conservamos las que ya tenía
+              urlsFinales = productoExistente ? (productoExistente.fotos || []) : [];
+            }
+
+            mensajeModal.textContent = 'Guardando datos...';
+
+            // 2. Empaquetar Variables
+            const objetoVariables: Record<string, string[]> = {};
+            document.querySelectorAll('.var-row').forEach(row => {
+              const clave = (row.querySelector('.var-key') as HTMLInputElement).value.trim();
+              const textoValores = (row.querySelector('.var-values') as HTMLInputElement).value;
+              if (clave !== '' && textoValores.trim() !== '') {
+                const arrayValores = textoValores.split(',').map(s => s.trim()).filter(s => s !== '');
+                if (arrayValores.length > 0) objetoVariables[clave] = arrayValores;
+              }
+            });
+
+            // 3. Crear el paquete final
+            const datosDelProducto = {
+              titulo: inputTitulo.value.trim(),
+              descripcion: inputDesc.value.trim(),
+              cantidad_minima: parseInt(inputMin.value),
+              precio: parseFloat(inputPrecio.value) || 0,
+              variables: objetoVariables,
+              fotos: urlsFinales // Inyectamos el array de URLs
+            };
+
+            // 4. Enviar a base de datos
+            let errorDeSupabase;
+            if (inputId.value === '') {
+              const { error } = await supabase.from('productos').insert([datosDelProducto]);
+              errorDeSupabase = error;
+            } else {
+              const { error } = await supabase.from('productos').update(datosDelProducto).eq('id', inputId.value);
+              errorDeSupabase = error;
+            }
+
+            if (errorDeSupabase) throw new Error(errorDeSupabase.message);
+
+            // Éxito
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            cargarProductos();
+
+          } catch (error: any) {
+            mensajeModal.textContent = 'Error: ' + error.message;
+            mensajeModal.className = 'text-sm font-semibold text-center mt-4 h-4 text-red-500';
+          } finally {
+            btnGuardar.disabled = false;
+            btnGuardar.textContent = 'Guardar Producto';
+          }
+        });
+
+        const btnLogout = document.getElementById('btn-logout') as HTMLButtonElement;
+        btnLogout.addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/login';
+        });
+      });
+    </script>
+  </body>
+</html>

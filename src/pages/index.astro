@@ -1,0 +1,163 @@
+---
+import { supabase } from '../lib/supabase';
+
+// Traemos TODOS los productos de la tabla, ordenados por su ID
+const { data: productos, error } = await supabase.from('productos').select('*').order('id');
+---
+
+<html lang="es" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>AG3D - Accesorios e Indumentaria Personalizada</title>
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans">
+
+    <header class="bg-gray-900 text-white sticky top-0 z-50 shadow-md">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-wider">AG3D</div>
+        <nav class="hidden md:flex gap-6">
+          <a href="#home" class="hover:text-blue-400 transition">Home</a>
+          <a href="#catalogo" class="hover:text-blue-400 transition">Catálogo</a>
+          <a href="#clientes" class="hover:text-blue-400 transition">Clientes</a>
+          <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
+          <a href="#nosotros" class="hover:text-blue-400 transition">Nosotros</a>
+		  <a href="/login" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition font-semibold">Ingresar</a>
+        </nav>
+      </div>
+    </header>
+
+    <section id="home" class="bg-white py-20 text-center">
+      <div class="container mx-auto px-4">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6">Llevamos tu logo a otro nivel</h1>
+        <p class="text-lg md:text-xl text-gray-600 mb-10">Llaveros, indumentaria y accesorios impresos en 3D y personalizados para tu empresa.</p>
+        <div class="bg-gray-200 h-64 flex items-center justify-center rounded-lg shadow-inner border-2 border-dashed border-gray-400">
+          <p class="text-gray-500">[Aquí irá el Carrusel de Imágenes]</p>
+        </div>
+      </div>
+    </section>
+
+   <section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-4 w-full max-w-7xl">
+    
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 tracking-tight">
+      Nuestros productos
+    </h2>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+      {productos?.map((producto) => (
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100 group">
+          
+{producto.fotos && producto.fotos.length > 0 ? (
+            <div class="relative w-full h-56 overflow-hidden bg-gray-100">
+              
+              <img 
+                src={producto.fotos[0]} 
+                alt={producto.titulo} 
+                class={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out ${producto.fotos.length > 1 ? 'group-hover:opacity-0' : 'group-hover:opacity-90'}`} 
+              />
+              
+              {producto.fotos.length > 1 && (
+                <img 
+                  src={producto.fotos[1]} 
+                  alt={`${producto.titulo} - Vista alternativa`} 
+                  class="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out" 
+                />
+              )}
+
+            </div>
+          ) : (
+            <div class="w-full h-56 bg-gray-200 flex items-center justify-center p-6 text-center group-hover:bg-gray-300 transition-colors">
+              <span class="text-gray-400 font-medium text-sm">Sin imagen</span>
+            </div>
+          )}
+          
+          <div class="p-6 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">
+              {producto.titulo}
+            </h3>
+            
+            <p class="text-gray-600 text-sm mb-6 line-clamp-2 flex-grow">
+              {producto.descripcion}
+            </p>
+            
+            <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm">
+              Ver detalles
+            </a>
+          </div>
+
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>
+
+    <section id="clientes" class="bg-gray-900 text-white py-20 text-center">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-6">Confían en nosotros</h2>
+        <p class="mb-10 text-gray-400">Empresas que ya tienen sus productos AG3D.</p>
+        <div class="bg-gray-800 h-32 flex items-center justify-center rounded-lg border border-gray-700">
+          <p class="text-gray-500">[Carrusel de Logos de Clientes]</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="py-20">
+      <div class="container mx-auto px-4 max-w-3xl">
+        <h2 class="text-3xl font-bold text-center mb-10">Preguntas Frecuentes</h2>
+        
+        <details class="bg-white mb-4 p-4 rounded-lg shadow cursor-pointer group">
+          <summary class="font-semibold text-lg outline-none">¿Cuál es el pedido mínimo?</summary>
+          <p class="mt-4 text-gray-600">El pedido mínimo para llaveros personalizados es de 50 unidades. Para indumentaria, consúltanos.</p>
+        </details>
+
+        <details class="bg-white mb-4 p-4 rounded-lg shadow cursor-pointer group">
+          <summary class="font-semibold text-lg outline-none">¿Qué formatos de logo aceptan?</summary>
+          <p class="mt-4 text-gray-600">Aceptamos formatos vectoriales (.ai, .svg, .eps) o imágenes de alta resolución (.png sin fondo).</p>
+        </details>
+      </div>
+    </section>
+
+    <footer id="nosotros" class="bg-gray-200 py-12">
+      <div class="container mx-auto px-4 text-center">
+        <h2 class="text-2xl font-bold mb-4">Sobre Nosotros</h2>
+        <p class="text-gray-700 mb-8 max-w-2xl mx-auto">Somos especialistas en llevar la identidad de tu marca a productos tangibles de alta calidad mediante tecnología de impresión 3D y técnicas tradicionales.</p>
+        
+        <div class="flex flex-col md:flex-row justify-center gap-8 mt-8 border-t border-gray-400 pt-8">
+          <div>
+            <h3 class="font-bold text-gray-900">Contacto</h3>
+            <p class="text-gray-600">Email: contacto@ag3d.com</p>
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-900">Redes Sociales</h3>
+            <p class="text-gray-600">Instagram: @AG3D_oficial</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script>
+  // @ts-ignore
+  import { supabase } from '../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      // Busca cualquier botón o enlace que lleve a "/login"
+      const btnLogin = document.querySelector('a[href="/login"]') as HTMLAnchorElement;
+      
+      if (btnLogin) {
+        btnLogin.textContent = 'Ir a mi Panel'; // Cambia el texto
+        btnLogin.className = 'px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition shadow-md'; // Lo resalta
+        
+        // Lo redirige a Admin o Dashboard según corresponda
+        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+        btnLogin.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+      }
+    }
+  });
+</script>
+
+  </body>
+</html>

@@ -1,0 +1,122 @@
+---
+// src/pages/login.astro
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Ingresar - AG3D</title>
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans flex flex-col min-h-screen">
+    
+    <header class="bg-gray-900 text-white shadow-md">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-wider">AG3D</div>
+        <a href="/" class="hover:text-blue-400 transition font-semibold">← Volver al inicio</a>
+      </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+      <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6">Acceso a tu Cuenta</h1>
+        
+        <form id="auth-form" class="space-y-4">
+          <div>
+            <label for="email" class="block text-gray-700 font-medium mb-1">Correo Electrónico</label>
+            <input type="email" id="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="tu@email.com" />
+          </div>
+          
+          <div>
+            <label for="password" class="block text-gray-700 font-medium mb-1">Contraseña</label>
+            <input type="password" id="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
+          </div>
+
+          <p id="mensaje" class="text-center text-sm font-semibold h-4"></p>
+
+          <div class="flex flex-col gap-3 mt-6">
+            <button type="button" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+              Iniciar Sesión
+            </button>
+            <button type="button" id="btn-register" class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition">
+              Crear Cuenta Nueva
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+  
+     
+<script>
+    // @ts-ignore
+    import { supabase } from '../lib/supabase.js';
+
+    // Envolvemos todo para poder usar "await" al inicio y proteger el HTML
+    document.addEventListener('DOMContentLoaded', async () => {
+      
+      // --- NUEVO: REDIRECCIÓN AUTOMÁTICA (INTELIGENCIA) ---
+      const { data: { session: sessionActual } } = await supabase.auth.getSession();
+      if (sessionActual) {
+        // Si detecta sesión activa, te manda a tu panel correspondiente al instante
+        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', sessionActual.user.id).single();
+        window.location.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        return; // Detiene el código de abajo porque ya no es necesario
+      }
+
+      // Usamos "as HTML..." para asegurarle a VS Code qué tipo de elemento es cada uno
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      const passwordInput = document.getElementById('password') as HTMLInputElement;
+      const btnLogin = document.getElementById('btn-login') as HTMLButtonElement;
+      const btnRegister = document.getElementById('btn-register') as HTMLButtonElement;
+      const mensajeEl = document.getElementById('mensaje') as HTMLParagraphElement;
+
+      // 1. Qué pasa al hacer clic en "Iniciar Sesión"
+      btnLogin.addEventListener('click', async () => {
+        mensajeEl.textContent = 'Cargando...';
+        mensajeEl.className = 'text-center text-sm font-semibold text-blue-500 h-4';
+        
+        const { error } = await supabase.auth.signInWithPassword({
+          email: emailInput.value,
+          password: passwordInput.value,
+        });
+
+        if (error) {
+          mensajeEl.textContent = 'Error: ' + error.message;
+          mensajeEl.className = 'text-center text-sm font-semibold text-red-500 h-4';
+        } else {
+          mensajeEl.textContent = '¡Ingreso exitoso! Redirigiendo...';
+          mensajeEl.className = 'text-center text-sm font-semibold text-green-500 h-4';
+          
+          // MEJORA: Revisamos si quien acaba de entrar es Admin o Cliente para mandarlo a la ruta correcta
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+             const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+             window.location.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard'; 
+          }
+        }
+      });
+
+      // 2. Qué pasa al hacer clic en "Crear Cuenta Nueva"
+      btnRegister.addEventListener('click', async () => {
+        mensajeEl.textContent = 'Cargando...';
+        mensajeEl.className = 'text-center text-sm font-semibold text-blue-500 h-4';
+
+        const { error } = await supabase.auth.signUp({
+          email: emailInput.value,
+          password: passwordInput.value,
+        });
+
+        if (error) {
+          mensajeEl.textContent = 'Error: ' + error.message;
+          mensajeEl.className = 'text-center text-sm font-semibold text-red-500 h-4';
+        } else {
+          mensajeEl.textContent = '¡Registro exitoso! Ya puedes iniciar sesión.';
+          mensajeEl.className = 'text-center text-sm font-semibold text-green-500 h-4';
+        }
+      });
+    });
+  </script>
+
+  </body>
+</html>
