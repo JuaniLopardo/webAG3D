@@ -1,19 +1,14 @@
 ---
 import { supabase } from '../lib/supabase';
+import '../styles/global.css';
 
 // Traemos TODOS los productos de la tabla, ordenados por su ID
 const { data: productos, error } = await supabase.from('productos').select('*').order('id');
 ---
 
 <html lang="es" class="scroll-smooth">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>AG3D - Accesorios e Indumentaria Personalizada</title>
-  </head>
-  <body class="bg-gray-50 text-gray-800 font-sans">
-
-    <header class="bg-gray-900 text-white sticky top-0 z-50 shadow-md">
+  <body class="bg-gray-50">
+    <header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
         <div class="text-2xl font-bold tracking-wider">AG3D</div>
         <nav class="hidden md:flex gap-6">
@@ -22,7 +17,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
           <a href="#clientes" class="hover:text-blue-400 transition">Clientes</a>
           <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
           <a href="#nosotros" class="hover:text-blue-400 transition">Nosotros</a>
-		  <a id="nav-auth-btn" href="/login" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+		  <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
         </nav>
       </div>
     </header>
