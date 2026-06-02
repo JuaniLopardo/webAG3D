@@ -14,13 +14,38 @@ const { data: productos, error } = await supabase.from('productos').select('*').
           <!-- Ajusta h-10 (40px) según el tamaño que desees para tu logo -->
           <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
         </a>
-        <nav class="hidden md:flex gap-6">
+
+        <!-- Botón Hamburguesa (solo visible en mobile) -->
+        <button id="menu-toggle" class="md:hidden p-2 focus:outline-none" aria-label="Abrir menú">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <!-- Navegación Desktop -->
+        <nav class="hidden md:flex gap-6 items-center">
           <a href="#home" class="hover:text-blue-400 transition">Home</a>
           <a href="#catalogo" class="hover:text-blue-400 transition">Catálogo</a>
           <a href="#clientes" class="hover:text-blue-400 transition">Clientes</a>
           <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
           <a href="#nosotros" class="hover:text-blue-400 transition">Nosotros</a>
-		  <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+          <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+        </nav>
+      </div>
+
+      <!-- Menú Mobile Desplegable -->
+      <div id="mobile-menu" class="hidden md:hidden bg-secondary border-t border-gray-800">
+        <nav class="flex flex-col p-4 space-y-4">
+          <!-- Sección de Auth prioritaria en mobile -->
+          <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-800 invisible">
+            <a id="mobile-login-btn" href="/login" class="w-full text-center py-2 bg-primary rounded-lg font-bold">Iniciar Sesión</a>
+            <a id="mobile-register-btn" href="/registro" class="w-full text-center py-2 border border-gray-700 rounded-lg font-bold">Registrarse</a>
+          </div>
+          <a href="#home" class="mobile-link py-2 hover:text-blue-400 transition">Home</a>
+          <a href="#catalogo" class="mobile-link py-2 hover:text-blue-400 transition">Catálogo</a>
+          <a href="#clientes" class="mobile-link py-2 hover:text-blue-400 transition">Clientes</a>
+          <a href="#faq" class="mobile-link py-2 hover:text-blue-400 transition">FAQ</a>
+          <a href="#nosotros" class="mobile-link py-2 hover:text-blue-400 transition">Nosotros</a>
         </nav>
       </div>
     </header>
@@ -157,11 +182,13 @@ const { data: productos, error } = await supabase.from('productos').select('*').
 
   document.addEventListener('DOMContentLoaded', async () => {
     const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
+    const mobileAuthContainer = document.getElementById('mobile-auth-container');
+    const mobileLoginBtn = document.getElementById('mobile-login-btn') as HTMLAnchorElement;
+    const mobileRegisterBtn = document.getElementById('mobile-register-btn') as HTMLAnchorElement;
+
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-      // Actualizamos/Guardamos el email del usuario en la tabla perfiles automáticamente
-      // Esto asegura que siempre tengamos el email actualizado junto a su perfil
       await supabase.from('perfiles').upsert({ 
         id: session.user.id, 
         email: session.user.email, // Esto funcionará tras ejecutar el SQL
@@ -174,10 +201,44 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         authBtn.className = 'ml-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
         
         const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
-        authBtn.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        authBtn.href = targetPath;
+
+        // Mobile: Actualizamos los botones del menú desplegable
+        if (mobileAuthContainer && mobileLoginBtn) {
+          mobileLoginBtn.textContent = 'Mi Panel';
+          mobileLoginBtn.href = targetPath;
+          mobileLoginBtn.className = 'w-full text-center py-2 bg-green-600 rounded-lg font-bold';
+          mobileRegisterBtn?.classList.add('hidden'); // Ocultamos registro si ya está logueado
+          mobileAuthContainer.classList.remove('invisible');
+        }
       }
     } else {
       authBtn?.classList.remove('invisible');
+      mobileAuthContainer?.classList.remove('invisible');
+    }
+
+    // Lógica para abrir/cerrar el menú mobile
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+
+    menuToggle?.addEventListener('click', () => {
+      mobileMenu?.classList.toggle('hidden');
+      // Cambiamos el icono entre hamburguesa y X
+      if (mobileMenu?.classList.contains('hidden')) {
+        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      } else {
+        menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+      }
+    });
+
+    // Cerrar el menú automáticamente al hacer clic en un link (útil para anchors en la misma página)
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu?.classList.add('hidden');
+        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      });
     }
   });
 </script>
