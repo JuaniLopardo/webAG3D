@@ -24,11 +24,11 @@ const { data: productos, error } = await supabase.from('productos').select('*').
 
         <!-- Navegación Desktop -->
         <nav class="hidden md:flex gap-6 items-center">
-          <a href="#home" class="hover:text-blue-400 transition">Home</a>
-          <a href="#catalogo" class="hover:text-blue-400 transition">Catálogo</a>
-          <a href="#clientes" class="hover:text-blue-400 transition">Clientes</a>
-          <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
-          <a href="#nosotros" class="hover:text-blue-400 transition">Nosotros</a>
+          <a href="#home" class="hover:text-primary transition">Home</a>
+          <a href="#catalogo" class="hover:text-primary transition">Catálogo</a>
+          <a href="#clientes" class="hover:text-primary transition">Clientes</a>
+          <a href="#faq" class="hover:text-primary transition">FAQ</a>
+          <a href="#nosotros" class="hover:text-primary transition">Nosotros</a>
           <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
         </nav>
       </div>
@@ -41,11 +41,11 @@ const { data: productos, error } = await supabase.from('productos').select('*').
             <a id="mobile-login-btn" href="/login" class="w-full text-center py-2 bg-primary rounded-lg font-bold">Iniciar Sesión</a>
             <a id="mobile-register-btn" href="/registro" class="w-full text-center py-2 border border-gray-700 rounded-lg font-bold">Registrarse</a>
           </div>
-          <a href="#home" class="mobile-link py-2 hover:text-blue-400 transition">Home</a>
-          <a href="#catalogo" class="mobile-link py-2 hover:text-blue-400 transition">Catálogo</a>
-          <a href="#clientes" class="mobile-link py-2 hover:text-blue-400 transition">Clientes</a>
-          <a href="#faq" class="mobile-link py-2 hover:text-blue-400 transition">FAQ</a>
-          <a href="#nosotros" class="mobile-link py-2 hover:text-blue-400 transition">Nosotros</a>
+          <a href="#home" class="mobile-link py-2 hover:text-primary transition">Home</a>
+          <a href="#catalogo" class="mobile-link py-2 hover:text-primary transition">Catálogo</a>
+          <a href="#clientes" class="mobile-link py-2 hover:text-primary transition">Clientes</a>
+          <a href="#faq" class="mobile-link py-2 hover:text-primary transition">FAQ</a>
+          <a href="#nosotros" class="mobile-link py-2 hover:text-primary transition">Nosotros</a>
         </nav>
       </div>
     </header>
@@ -121,7 +121,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
               {producto.descripcion}
             </p>
             
-            <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm">
+            <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover active:bg-primary transition-colors shadow-sm">
               Ver detalles
             </a>
           </div>
@@ -189,16 +189,22 @@ const { data: productos, error } = await supabase.from('productos').select('*').
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
+      const metadata = session.user.user_metadata;
+      
       await supabase.from('perfiles').upsert({ 
         id: session.user.id, 
-        email: session.user.email, // Esto funcionará tras ejecutar el SQL
+        email: session.user.email,
+        nombre_completo: metadata.nombre_completo,
+        telefono: metadata.telefono,
+        nombre_empresa: metadata.nombre_empresa,
+        instagram: metadata.instagram,
         last_login: new Date().toISOString()
       });
 
       if (authBtn) {
         authBtn.textContent = 'Mi Panel';
         authBtn.classList.remove('invisible');
-        authBtn.className = 'ml-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
+        authBtn.className = 'ml-4 bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
         
         const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
         const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
@@ -208,7 +214,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         if (mobileAuthContainer && mobileLoginBtn) {
           mobileLoginBtn.textContent = 'Mi Panel';
           mobileLoginBtn.href = targetPath;
-          mobileLoginBtn.className = 'w-full text-center py-2 bg-green-600 rounded-lg font-bold';
+          mobileLoginBtn.className = 'w-full text-center py-2 bg-primary rounded-lg font-bold';
           mobileRegisterBtn?.classList.add('hidden'); // Ocultamos registro si ya está logueado
           mobileAuthContainer.classList.remove('invisible');
         }
@@ -239,7 +245,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         mobileMenu?.classList.add('hidden');
         menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
       });
-    }
+    });
   });
 </script>
 

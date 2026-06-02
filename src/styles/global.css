@@ -11,3 +11,7 @@
     @apply text-gray-900 tracking-tight;
   }
 }
+
+:root {
+  --color-primary: #61AAE1;
+}

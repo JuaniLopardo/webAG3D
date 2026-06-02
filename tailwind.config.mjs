@@ -5,9 +5,9 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2563eb', // Azul principal
-          hover: '#1d4ed8',
-          light: '#dbeafe',
+          DEFAULT: '#61AAE1', // Nuevo Azul AG3D
+          hover: '#4d92c7',   // Variante más oscura para el hover
+          light: '#eef7fe',   // Variante clara
         },
         secondary: '#111827', // Gris oscuro/Negro
         accent: '#22c55e',    // Verde WhatsApp/Éxito

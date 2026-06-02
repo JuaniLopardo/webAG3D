@@ -1,257 +1,121 @@
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Mi Panel - AG3D</title>
-  </head>
-  <body class="bg-gray-50 text-gray-800 font-sans min-h-screen relative">
-    
-    <header class="bg-gray-900 text-white shadow-md">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
-        <div class="text-2xl font-bold tracking-wider">AG3D Panel</div>
-        <div class="flex gap-4 items-center">
-          <a href="/" class="text-sm hover:text-blue-400 transition">Ir a la tienda</a>
-          <button id="btn-logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+---
+// src/pages/dashboard.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Mi Perfil">
+  <div class="min-h-screen flex flex-col">
+    <header class="bg-secondary text-white shadow-md">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="transition-transform hover:scale-105 active:scale-95">
+          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
+        </a>
+        <div class="flex items-center gap-4">
+          <a href="/" class="text-sm hidden sm:block hover:text-blue-400 transition">Volver al Inicio</a>
+          <button id="btn-logout-dash" class="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
             Cerrar Sesión
           </button>
         </div>
       </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        <div class="md:col-span-1">
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-gray-900">Mis Datos</h2>
-              <button id="btn-editar" class="text-blue-600 text-sm font-semibold hover:underline">Editar</button>
-            </div>
-            
-            <div class="space-y-4 text-sm">
-              <div>
-                <p class="text-gray-500 font-medium">Correo Electrónico</p>
-                <p id="profile-email" class="text-gray-900 font-semibold truncate">Cargando...</p>
-              </div>
-              <div>
-                <p class="text-gray-500 font-medium">Nombre / Empresa</p>
-                <p id="profile-name" class="text-gray-900 font-semibold truncate">-</p>
-              </div>
-              <div>
-                <p class="text-gray-500 font-medium">Teléfono</p>
-                <p id="profile-phone" class="text-gray-900 font-semibold truncate">-</p>
-              </div>
-              <div>
-                <p class="text-gray-500 font-medium">Instagram</p>
-                <p id="profile-ig" class="text-gray-900 font-semibold truncate">-</p>
-              </div>
-            </div>
-          </div>
+    <main class="container mx-auto px-4 py-12 max-w-2xl flex-grow">
+      <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+        <div class="mb-8 border-b pb-4">
+          <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Mi Perfil</h1>
+          <p class="text-gray-500 mt-1">Gestiona tus datos de contacto y facturación</p>
         </div>
 
-        <div class="md:col-span-2">
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Mis Pedidos</h2>
-            
-            <div id="pedidos-container" class="space-y-4">
-              <p class="text-gray-500 text-sm animate-pulse">Cargando información de tus pedidos...</p>
+        <form id="form-perfil" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo *</label>
+              <input type="text" id="dash-nombre" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Teléfono *</label>
+              <input type="tel" id="dash-tel" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Email (No editable)</label>
+              <input type="email" id="dash-email" disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Empresa (Opcional)</label>
+              <input type="text" id="dash-empresa" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Instagram (Opcional)</label>
+              <input type="text" id="dash-instagram" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" placeholder="@usuario" />
             </div>
           </div>
-        </div>
 
+          <div id="mensaje-dash" class="text-center h-4 text-sm font-semibold"></div>
+
+          <div class="pt-4">
+            <button type="submit" id="btn-guardar-perfil" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98]">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
       </div>
     </main>
+  </div>
 
-    <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col items-center justify-center z-50 px-4 transition-opacity">
-      <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Editar mis datos</h3>
-        
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre o Empresa</label>
-            <input type="text" id="input-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. AG3D" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-            <input type="tel" id="input-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 1123456789" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
-            <div class="flex">
-              <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">@</span>
-              <input type="text" id="input-ig" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="usuario_ig" />
-            </div>
-          </div>
-        </div>
+  <script>
+    // @ts-ignore
+    import { supabase } from '../lib/supabase';
 
-        <p id="modal-mensaje" class="text-sm font-semibold text-center mt-4 h-4"></p>
+    const form = document.getElementById('form-perfil') as HTMLFormElement;
+    const btn = document.getElementById('btn-guardar-perfil') as HTMLButtonElement;
+    const msg = document.getElementById('mensaje-dash') as HTMLParagraphElement;
+    const btnLogout = document.getElementById('btn-logout-dash') as HTMLButtonElement;
 
-        <div class="mt-6 flex justify-end gap-3">
-          <button id="btn-cancelar" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
-          <button id="btn-guardar" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Guardar cambios</button>
-        </div>
-      </div>
-    </div>
+    const inputNombre = document.getElementById('dash-nombre') as HTMLInputElement;
+    const inputTel = document.getElementById('dash-tel') as HTMLInputElement;
+    const inputEmail = document.getElementById('dash-email') as HTMLInputElement;
+    const inputEmpresa = document.getElementById('dash-empresa') as HTMLInputElement;
+    const inputInstagram = document.getElementById('dash-instagram') as HTMLInputElement;
 
-    <script>
-      // @ts-ignore
-      import { supabase } from '../lib/supabase';
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/login'; return; }
 
-      document.addEventListener('DOMContentLoaded', async () => {
-        
-        // --- 1. AUTENTICACIÓN Y CARGA INICIAL ---
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          window.location.href = '/login';
-          return;
-        }
+      const { data: perfil } = await supabase.from('perfiles').select('*').eq('id', session.user.id).single();
+      if (perfil) {
+        inputNombre.value = perfil.nombre_completo || '';
+        inputTel.value = perfil.telefono || '';
+        inputEmail.value = perfil.email || session.user.email || '';
+        inputEmpresa.value = perfil.nombre_empresa || '';
+        inputInstagram.value = perfil.instagram || '';
+      }
+    });
 
-        const user = session.user;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      btn.disabled = true; btn.textContent = 'Guardando...'; msg.textContent = '';
 
-        let { data: perfil } = await supabase.from('perfiles').select('*').eq('id', user.id).single();
-        
-        if (!perfil) {
-          const { data: newPerfil } = await supabase.from('perfiles').insert([{ id: user.id, rol: 'cliente' }]).select().single();
-          perfil = newPerfil;
-        }
+      const { error } = await supabase.from('perfiles').update({
+        nombre_completo: inputNombre.value.trim(),
+        telefono: inputTel.value.trim(),
+        nombre_empresa: inputEmpresa.value.trim(),
+        instagram: inputInstagram.value.trim()
+      }).eq('id', session.user.id);
 
-        if (perfil.rol === 'admin') {
-          window.location.href = '/admin'; 
-          return;
-        }
+      if (error) {
+        msg.textContent = 'Error al actualizar el perfil'; msg.className = 'text-center h-4 text-sm font-semibold text-red-500';
+      } else {
+        msg.textContent = '¡Perfil actualizado con éxito!'; msg.className = 'text-center h-4 text-sm font-semibold text-green-600';
+      }
+      btn.disabled = false; btn.textContent = 'Guardar Cambios';
+    });
 
-        // --- 2. ELEMENTOS DEL DOM ---
-        // Pantalla principal
-        const emailEl = document.getElementById('profile-email') as HTMLElement;
-        const nameEl = document.getElementById('profile-name') as HTMLElement;
-        const phoneEl = document.getElementById('profile-phone') as HTMLElement;
-        const igEl = document.getElementById('profile-ig') as HTMLElement;
-        const btnEditar = document.getElementById('btn-editar') as HTMLButtonElement;
-        
-        // Modal
-        const modal = document.getElementById('modal-editar') as HTMLDivElement;
-        const inputName = document.getElementById('input-name') as HTMLInputElement;
-        const inputPhone = document.getElementById('input-phone') as HTMLInputElement;
-        const inputIg = document.getElementById('input-ig') as HTMLInputElement;
-        const btnCancelar = document.getElementById('btn-cancelar') as HTMLButtonElement;
-        const btnGuardar = document.getElementById('btn-guardar') as HTMLButtonElement;
-        const modalMensaje = document.getElementById('modal-mensaje') as HTMLParagraphElement;
-
-        // DIBUJAR DATOS INICIALES
-        emailEl.textContent = user.email || 'Sin correo';
-        nameEl.textContent = perfil.nombre_completo || 'No especificado';
-        phoneEl.textContent = perfil.telefono || 'No especificado';
-        igEl.textContent = perfil.instagram ? `@${perfil.instagram}` : 'No especificado';
-
-        // --- 3. LÓGICA DEL MODAL ---
-        
-        // Abrir modal y cargarle los datos actuales
-        btnEditar.addEventListener('click', () => {
-          inputName.value = perfil.nombre_completo || '';
-          inputPhone.value = perfil.telefono || '';
-          inputIg.value = perfil.instagram || '';
-          modalMensaje.textContent = ''; // Limpiamos mensajes anteriores
-          modal.classList.remove('hidden');
-          modal.classList.add('flex');
-        });
-
-        // Cerrar modal
-        btnCancelar.addEventListener('click', () => {
-          modal.classList.add('hidden');
-          modal.classList.remove('flex');
-        });
-
-        // Guardar datos en Supabase
-        btnGuardar.addEventListener('click', async () => {
-          modalMensaje.textContent = 'Guardando...';
-          modalMensaje.className = 'text-sm font-semibold text-center mt-4 h-4 text-blue-500';
-          btnGuardar.disabled = true;
-
-          // Limpiamos el "@" si el usuario lo escribió por costumbre
-          const igLimpio = inputIg.value.replace('@', '').trim();
-
-          const { error } = await supabase
-            .from('perfiles')
-            .update({ 
-              nombre_completo: inputName.value.trim(),
-              telefono: inputPhone.value.trim(),
-              instagram: igLimpio
-            })
-            .eq('id', user.id);
-
-          btnGuardar.disabled = false;
-
-          if (error) {
-            modalMensaje.textContent = 'Error al guardar: ' + error.message;
-            modalMensaje.className = 'text-sm font-semibold text-center mt-4 h-4 text-red-500';
-          } else {
-            // Actualizamos la variable perfil local
-            perfil.nombre_completo = inputName.value.trim();
-            perfil.telefono = inputPhone.value.trim();
-            perfil.instagram = igLimpio;
-
-            // Actualizamos la pantalla al instante
-            nameEl.textContent = perfil.nombre_completo || 'No especificado';
-            phoneEl.textContent = perfil.telefono || 'No especificado';
-            igEl.textContent = perfil.instagram ? `@${perfil.instagram}` : 'No especificado';
-
-            // Cerramos modal automáticamente
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-          }
-        });
-
-        // --- 4. LÓGICA DE PEDIDOS ---
-        const { data: pedidos } = await supabase.from('pedidos').select('*').eq('cliente_id', user.id).order('fecha_pedido', { ascending: false });
-        const pedidosContainer = document.getElementById('pedidos-container') as HTMLElement;
-
-        if (pedidos && pedidos.length > 0) {
-          pedidosContainer.innerHTML = pedidos.map(pedido => {
-            const items = pedido.items || [];
-            // @ts-ignore
-            const listaItems = items.map((item) => `<li class="text-gray-700 mb-1">• ${item.cantidad}x ${item.titulo}</li>`).join('');
-            
-            let colorEstado = 'bg-blue-100 text-blue-800'; 
-            if(pedido.estado === 'Entregado') colorEstado = 'bg-green-100 text-green-800';
-            if(pedido.estado === 'Cancelado') colorEstado = 'bg-red-100 text-red-800';
-
-            return `
-              <div class="border border-gray-100 rounded-lg p-5 bg-gray-50 hover:shadow-md transition">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                  <span class="font-bold text-gray-900 text-lg">Pedido #${pedido.id}</span>
-                  <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${colorEstado}">
-                    ${pedido.estado}
-                  </span>
-                </div>
-                <div class="mb-4">
-                  <p class="text-sm text-gray-500 font-semibold mb-2">Productos solicitados:</p>
-                  <ul class="text-sm">
-                    ${listaItems || '<li class="text-gray-500 italic">No hay detalles de productos.</li>'}
-                  </ul>
-                </div>
-                <div class="text-xs text-gray-400 text-right">
-                  Fecha: ${new Date(pedido.fecha_pedido).toLocaleDateString('es-AR')}
-                </div>
-              </div>
-            `;
-          }).join('');
-        } else {
-          pedidosContainer.innerHTML = `
-            <div class="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <p class="text-gray-500">Aún no tienes pedidos registrados.</p>
-              <a href="/" class="inline-block mt-4 text-blue-600 font-semibold hover:underline">Ver catálogo</a>
-            </div>
-          `;
-        }
-      });
-
-      // --- 5. CERRAR SESIÓN ---
-      const btnLogout = document.getElementById('btn-logout') as HTMLButtonElement;
-      btnLogout.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login';
-      });
-    </script>
-  </body>
-</html>
+    btnLogout.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = '/login'; });
+  </script>
+</Layout>
