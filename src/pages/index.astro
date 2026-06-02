@@ -10,7 +10,10 @@ const { data: productos, error } = await supabase.from('productos').select('*').
   <body class="bg-gray-50">
     <header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div class="text-2xl font-bold tracking-wider">AG3D</div>
+        <a href="/" class="transition-transform hover:scale-105 active:scale-95">
+          <!-- Ajusta h-10 (40px) según el tamaño que desees para tu logo -->
+          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
+        </a>
         <nav class="hidden md:flex gap-6">
           <a href="#home" class="hover:text-blue-400 transition">Home</a>
           <a href="#catalogo" class="hover:text-blue-400 transition">Catálogo</a>
@@ -161,7 +164,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
       // Esto asegura que siempre tengamos el email actualizado junto a su perfil
       await supabase.from('perfiles').upsert({ 
         id: session.user.id, 
-        email: session.user.email,
+        email: session.user.email, // Esto funcionará tras ejecutar el SQL
         last_login: new Date().toISOString()
       });
 
