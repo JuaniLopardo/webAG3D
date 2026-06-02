@@ -321,7 +321,19 @@
 
           if (listaProductos.length > 0) {
             productosContainer.innerHTML = listaProductos.map(prod => {
-              const fotosArray = Array.isArray(prod.fotos) ? prod.fotos : [];
+              const fotosArray = Array.isArray(prod.fotos) ? prod.fotos : (prod.fotos ? [prod.fotos] : []);
+              
+              const getUrlSafe = (f: any) => {
+                if (!f) return null;
+                if (typeof f === 'string') {
+                  if (f.startsWith('{')) {
+                    try { return JSON.parse(f).url; } catch { return null; }
+                  }
+                  return f;
+                }
+                return f.url;
+              };
+
               const variables = prod.variables || {};
               
               let textoVariables = '';
@@ -361,8 +373,7 @@
               if (!textoVariables) textoVariables = '<span class="text-gray-400 text-xs italic">Ninguna</span>';
               
               // Extraer URL de miniatura de forma segura
-              const primeraFoto = fotosArray[0];
-              const miniaturaUrl = primeraFoto ? (typeof primeraFoto === 'string' ? primeraFoto : primeraFoto.url) : null;
+              const miniaturaUrl = getUrlSafe(fotosArray[0]);
               const miniatura = miniaturaUrl 
                 ? `<img src="${miniaturaUrl}" class="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />` 
                 : `<div class="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xs text-gray-400">Sin img</div>`;
@@ -400,17 +411,20 @@
                 const prodId = target.dataset.prodId;
                 const varKey = target.dataset.varKey;
                 const prod = listaProductos.find(p => p.id.toString() === prodId);
+                const getUrlSafe = (f: any) => (typeof f === 'string' && f.startsWith('{')) ? JSON.parse(f).url : (f.url || f);
                 
                 if (prod && prod.fotos) {
+                  const fotosArr = Array.isArray(prod.fotos) ? prod.fotos : [prod.fotos];
                   const foto = prod.fotos.find((f: any) => {
+                    const data = typeof f === 'string' && f.startsWith('{') ? JSON.parse(f) : f;
                     if (varKey === 'general') {
-                      return typeof f === 'string' || !f.variableAsociada;
+                      return typeof data === 'string' || !data.variableAsociada;
                     }
-                    return typeof f === 'object' && f.variableAsociada === varKey;
+                    return typeof data === 'object' && data.variableAsociada === varKey;
                   });
 
                   if (foto) {
-                    const urlFinal = typeof foto === 'string' ? foto : foto.url;
+                    const urlFinal = getUrlSafe(foto);
                     abrirVisor(urlFinal, `${prod.titulo} - ${varKey === 'general' ? 'Principal' : varKey}`);
                   }
                 }
@@ -432,12 +446,15 @@
                   inputPrecio.value = productoAEditar.precio || '';
                   inputFotos.value = ''; // Limpiamos el input de fotos
                   
+                  const fotosEdit = Array.isArray(productoAEditar.fotos) ? productoAEditar.fotos : (productoAEditar.fotos ? [productoAEditar.fotos] : []);
+
                   // Cargar fotos existentes para previsualización
-                  fotosParaSubir = (productoAEditar.fotos || []).map((f: any) => (
-                    typeof f === 'string' 
-                    ? { url: f, variableAsociada: '' } 
-                    : { url: f.url, variableAsociada: f.variableAsociada || '' }
-                  ));
+                  fotosParaSubir = fotosEdit.map((f: any) => {
+                    const data = (typeof f === 'string' && f.startsWith('{')) ? JSON.parse(f) : f;
+                    return typeof data === 'string' 
+                      ? { url: data, variableAsociada: '' } 
+                      : { url: data.url, variableAsociada: data.variableAsociada || '' };
+                  });
                   renderizarPreviews();
                   
                   variablesContainer.innerHTML = '';

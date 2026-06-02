@@ -46,8 +46,20 @@ const { data: productos, error } = await supabase.from('productos').select('*').
     
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
       {productos?.map((producto) => {
-        const fotos = Array.isArray(producto.fotos) ? producto.fotos : [];
-        const getUrl = (f: any) => typeof f === 'string' ? f : f?.url;
+        // Función robusta para extraer la URL
+        const getUrl = (f: any) => {
+          if (!f) return null;
+          if (typeof f === 'string') {
+            // Si es un string que parece JSON, lo parseamos
+            if (f.startsWith('{')) {
+              try { return JSON.parse(f).url; } catch { return null; }
+            }
+            return f; // Es una URL directa (formato viejo)
+          }
+          return f.url; // Es un objeto (formato nuevo)
+        };
+
+        const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
         const foto1 = getUrl(fotos[0]);
         const foto2 = getUrl(fotos[1]);
 

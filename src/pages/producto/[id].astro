@@ -17,6 +17,21 @@ if (!producto) {
 }
 
 const variablesSeguras = producto.variables || {};
+const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
+
+// Función de ayuda para extraer la URL (Server Side)
+const getUrl = (f: any) => {
+  if (!f) return null;
+  if (typeof f === 'string') {
+    if (f.startsWith('{')) {
+      try { return JSON.parse(f).url; } catch { return f; }
+    }
+    return f;
+  }
+  return f.url;
+};
+
+const fotoInicial = getUrl(fotos[0]);
 
 // Preparación: en el futuro traeremos el mapeo desde la base de datos (Ej: {"Negro": 1})
 const mapeoFotos = producto.mapeo_fotos || {}; 
@@ -41,19 +56,19 @@ const mapeoFotos = producto.mapeo_fotos || {};
       <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
         
         <div class="md:w-1/2 bg-white flex flex-col items-center justify-center p-4 md:p-8 relative group">
-          {producto.fotos && producto.fotos.length > 0 ? (
+          {fotos.length > 0 ? (
             <div 
               class="w-full max-w-md relative" 
               id="galeria-container" 
-              data-fotos={JSON.stringify(producto.fotos)}
+              data-fotos={JSON.stringify(fotos)}
               data-mapeo={JSON.stringify(mapeoFotos)}
             >
               
               <div class="aspect-square w-full bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm relative">
-                <img id="foto-principal" src={producto.fotos[0]} alt={producto.titulo} class="w-full h-full object-contain transition-opacity duration-300" />
+                <img id="foto-principal" src={fotoInicial} alt={producto.titulo} class="w-full h-full object-contain transition-opacity duration-300" />
               </div>
 
-              {producto.fotos.length > 1 && (
+              {fotos.length > 1 && (
                 <>
                   <button id="btn-prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center shadow-md font-bold text-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110">
                     &lt;
@@ -63,7 +78,7 @@ const mapeoFotos = producto.mapeo_fotos || {};
                   </button>
                   
                   <div class="flex justify-center gap-2 mt-4">
-                    {producto.fotos.map((_: any, i: number) => (
+                    {fotos.map((_: any, i: number) => (
                       <div class={`w-2.5 h-2.5 rounded-full dot-indicador transition-colors ${i === 0 ? 'bg-blue-600' : 'bg-gray-300'}`} data-index={i}></div>
                     ))}
                   </div>
@@ -127,6 +142,18 @@ const mapeoFotos = producto.mapeo_fotos || {};
         const fotos = JSON.parse(fotosRaw);
         const mapeoFotos = mapeoRaw ? JSON.parse(mapeoRaw) : {};
         
+        // Función de ayuda para extraer la URL (Client Side)
+        const getUrlSafe = (f: any) => {
+          if (!f) return '';
+          if (typeof f === 'string') {
+            if (f.startsWith('{')) {
+              try { return JSON.parse(f).url; } catch { return f; }
+            }
+            return f;
+          }
+          return f.url || '';
+        };
+
         const imgPrincipal = document.getElementById('foto-principal') as HTMLImageElement;
         const btnPrev = document.getElementById('btn-prev');
         const btnNext = document.getElementById('btn-next');
@@ -143,7 +170,7 @@ const mapeoFotos = producto.mapeo_fotos || {};
           // Efecto de desvanecimiento
           imgPrincipal.style.opacity = '0.5';
           setTimeout(() => {
-            imgPrincipal.src = fotos[indexActual];
+            imgPrincipal.src = getUrlSafe(fotos[indexActual]);
             imgPrincipal.style.opacity = '1';
           }, 150);
           
@@ -187,10 +214,19 @@ const mapeoFotos = producto.mapeo_fotos || {};
             target.classList.remove('border-gray-200', 'text-gray-700');
             target.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-800');
 
-            // Si hay una foto vinculada a esta palabra (ej: "Negro"), movemos el carrusel
-            if (valor && mapeoFotos[valor] !== undefined) {
-              const indexFoto = mapeoFotos[valor];
-              cambiarFoto(indexFoto);
+            // Buscamos si hay una foto que tenga esta variable asociada
+            if (valor) {
+              const indexEncontrado = fotos.findIndex((f: any) => {
+                const data = (typeof f === 'string' && f.startsWith('{')) ? JSON.parse(f) : f;
+                return typeof data === 'object' && data.variableAsociada === valor;
+              });
+
+              if (indexEncontrado !== -1) {
+                cambiarFoto(indexEncontrado);
+              } else if (mapeoFotos[valor] !== undefined) {
+                // Mantenemos compatibilidad con el mapeo manual si existiera
+                cambiarFoto(mapeoFotos[valor]);
+              }
             }
           });
         });
