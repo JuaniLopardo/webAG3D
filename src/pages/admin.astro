@@ -71,8 +71,20 @@
 
       <section id="section-usuarios" class="hidden">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Directorio de Clientes</h1>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <p class="text-gray-500 animate-pulse">Cargando base de datos...</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+                <th class="p-4 font-semibold">Email</th>
+                <th class="p-4 font-semibold">Nombre / Empresa</th>
+                <th class="p-4 font-semibold">Rol</th>
+                <th class="p-4 font-semibold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-usuarios-container" class="divide-y divide-gray-200">
+              <tr><td colspan="4" class="p-4 text-center text-gray-500 italic">No hay clientes registrados aún.</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -165,6 +177,7 @@
               elements.btn.className = 'w-full text-left px-4 py-3 rounded-lg bg-blue-600 text-white font-medium transition';
               elements.sec.classList.remove('hidden');
               elements.sec.classList.add('block');
+              if (key === 'usuarios') cargarUsuarios();
             } else {
               elements.btn.className = 'w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition';
               elements.sec.classList.remove('block');
@@ -200,15 +213,21 @@
 
         function renderizarPreviews() {
           previewContainer.innerHTML = '';
-          const keys = Array.from(document.querySelectorAll('.var-key')).map(i => (i as HTMLInputElement).value).filter(v => v !== '');
+          
+          const allOptions: string[] = [];
+          document.querySelectorAll('.var-row').forEach(row => {
+            const valuesStr = (row.querySelector('.var-values') as HTMLInputElement).value;
+            const vals = valuesStr.split(',').map(s => s.trim()).filter(s => s !== '');
+            allOptions.push(...vals);
+          });
           
           fotosParaSubir.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'relative group border border-gray-200 rounded-lg p-1 bg-white';
             
-            let options = `<option value="">Sin variable</option>`;
-            keys.forEach(k => {
-              options += `<option value="${k}" ${item.variableAsociada === k ? 'selected' : ''}>${k}</option>`;
+            let options = `<option value="">General (Sin variable)</option>`;
+            allOptions.forEach(opt => {
+              options += `<option value="${opt}" ${item.variableAsociada === opt ? 'selected' : ''}>${opt}</option>`;
             });
 
             div.innerHTML = `
@@ -254,11 +273,37 @@
           `;
           row.querySelector('.btn-del-var')?.addEventListener('click', () => row.remove());
           row.querySelector('.var-key')?.addEventListener('input', () => renderizarPreviews());
+          row.querySelector('.var-values')?.addEventListener('input', () => renderizarPreviews());
           variablesContainer.appendChild(row);
         }
         btnAddVar.addEventListener('click', () => crearFilaDeVariable());
 
         const productosContainer = document.getElementById('admin-productos-container') as HTMLElement;
+        const usuariosContainer = document.getElementById('admin-usuarios-container') as HTMLElement;
+
+        async function cargarUsuarios() {
+          const { data: usuarios, error } = await supabase.from('perfiles').select('*').order('email');
+          if (error || !usuarios) return;
+
+          usuariosContainer.innerHTML = usuarios.map(u => `
+            <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+              <td class="p-4">
+                <p class="font-medium text-gray-900">${u.email || 'Sin email'}</p>
+                <p class="text-[10px] text-gray-400 font-mono">${u.id}</p>
+              </td>
+              <td class="p-4">
+                <p class="text-sm text-gray-700">${u.nombre_completo || u.nombre_empresa || '<span class="italic text-gray-400">Perfil incompleto</span>'}</p>
+              </td>
+              <td class="p-4">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${u.rol === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}">${u.rol}</span>
+              </td>
+              <td class="p-4 text-right">
+                <button class="text-blue-600 hover:text-blue-800 text-xs font-bold">Ver Detalles</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+
         const visorModal = document.getElementById('modal-visor') as HTMLDivElement;
         const visorImg = document.getElementById('img-visor') as HTMLImageElement;
         const visorTxt = document.getElementById('txt-visor') as HTMLParagraphElement;
@@ -276,17 +321,48 @@
 
           if (listaProductos.length > 0) {
             productosContainer.innerHTML = listaProductos.map(prod => {
-              const keysVariables = Object.keys(prod.variables || {});
               const fotosArray = Array.isArray(prod.fotos) ? prod.fotos : [];
+              const variables = prod.variables || {};
               
-              const textoVariables = keysVariables.length > 0 
-                ? keysVariables.map(k => {
-                    const tieneFoto = fotosArray.some((f: any) => f.variableAsociada === k);
-                    return `<button class="btn-ver-var px-2 py-1 rounded text-xs capitalize transition ${tieneFoto ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 font-bold' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}" data-prod-id="${prod.id}" data-var-key="${k}" ${!tieneFoto ? 'disabled' : ''}>${k}</button>`;
-                  }).join(' ') 
-                : '<span class="text-gray-400 text-xs italic">Ninguna</span>';
+              let textoVariables = '';
+
+              // 1. Botón para Fotos Generales (sin variable o formato antiguo)
+              const fotosGenerales = fotosArray.filter((f: any) => {
+                if (typeof f === 'string') return true;
+                return !f.variableAsociada || f.variableAsociada === '';
+              });
+
+              if (fotosGenerales.length > 0) {
+                textoVariables += `
+                  <button class="btn-ver-var px-2 py-1 rounded text-[10px] capitalize transition mb-1 mr-1 bg-blue-600 text-white hover:bg-blue-700 font-bold shadow-sm" 
+                    data-prod-id="${prod.id}" 
+                    data-var-key="general">
+                    Principal
+                  </button>`;
+              }
+
+              // 2. Botones para variables específicas
+              Object.entries(variables).forEach(([key, values]) => {
+                const vals = Array.isArray(values) ? values : [];
+                vals.forEach(v => {
+                  const tieneFoto = fotosArray.some((f: any) => 
+                    typeof f === 'object' && f.variableAsociada === v
+                  );
+                  textoVariables += `
+                    <button class="btn-ver-var px-2 py-1 rounded text-[10px] capitalize transition mb-1 mr-1 ${tieneFoto ? 'bg-blue-600 text-white hover:bg-blue-700 font-bold shadow-sm' : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'}" 
+                      data-prod-id="${prod.id}" 
+                      data-var-key="${v}" 
+                      ${!tieneFoto ? 'disabled' : ''}>
+                      ${v}
+                    </button>`;
+                });
+              });
+
+              if (!textoVariables) textoVariables = '<span class="text-gray-400 text-xs italic">Ninguna</span>';
               
-              const miniaturaUrl = (fotosArray.length > 0) ? (typeof fotosArray[0] === 'string' ? fotosArray[0] : fotosArray[0].url) : null;
+              // Extraer URL de miniatura de forma segura
+              const primeraFoto = fotosArray[0];
+              const miniaturaUrl = primeraFoto ? (typeof primeraFoto === 'string' ? primeraFoto : primeraFoto.url) : null;
               const miniatura = miniaturaUrl 
                 ? `<img src="${miniaturaUrl}" class="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />` 
                 : `<div class="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xs text-gray-400">Sin img</div>`;
@@ -324,10 +400,18 @@
                 const prodId = target.dataset.prodId;
                 const varKey = target.dataset.varKey;
                 const prod = listaProductos.find(p => p.id.toString() === prodId);
+                
                 if (prod && prod.fotos) {
-                  const foto = prod.fotos.find((f: any) => f.variableAsociada === varKey);
+                  const foto = prod.fotos.find((f: any) => {
+                    if (varKey === 'general') {
+                      return typeof f === 'string' || !f.variableAsociada;
+                    }
+                    return typeof f === 'object' && f.variableAsociada === varKey;
+                  });
+
                   if (foto) {
-                    abrirVisor(foto.url, `${prod.titulo} - ${varKey}`);
+                    const urlFinal = typeof foto === 'string' ? foto : foto.url;
+                    abrirVisor(urlFinal, `${prod.titulo} - ${varKey === 'general' ? 'Principal' : varKey}`);
                   }
                 }
               });

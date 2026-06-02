@@ -22,7 +22,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
           <a href="#clientes" class="hover:text-blue-400 transition">Clientes</a>
           <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
           <a href="#nosotros" class="hover:text-blue-400 transition">Nosotros</a>
-		  <a href="/login" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition font-semibold">Ingresar</a>
+		  <a id="nav-auth-btn" href="/login" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
         </nav>
       </div>
     </header>
@@ -45,26 +45,31 @@ const { data: productos, error } = await supabase.from('productos').select('*').
     </h2>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-      {productos?.map((producto) => (
+      {productos?.map((producto) => {
+        const fotos = Array.isArray(producto.fotos) ? producto.fotos : [];
+        const getUrl = (f: any) => typeof f === 'string' ? f : f?.url;
+        const foto1 = getUrl(fotos[0]);
+        const foto2 = getUrl(fotos[1]);
+
+        return (
         <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100 group">
           
-{producto.fotos && producto.fotos.length > 0 ? (
+          {foto1 ? (
             <div class="relative w-full h-56 overflow-hidden bg-gray-100">
               
               <img 
-                src={producto.fotos[0]} 
+                src={foto1} 
                 alt={producto.titulo} 
-                class={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out ${producto.fotos.length > 1 ? 'group-hover:opacity-0' : 'group-hover:opacity-90'}`} 
+                class={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out ${foto2 ? 'group-hover:opacity-0' : 'group-hover:opacity-90'}`} 
               />
               
-              {producto.fotos.length > 1 && (
+              {foto2 && (
                 <img 
-                  src={producto.fotos[1]} 
+                  src={foto2} 
                   alt={`${producto.titulo} - Vista alternativa`} 
                   class="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out" 
                 />
               )}
-
             </div>
           ) : (
             <div class="w-full h-56 bg-gray-200 flex items-center justify-center p-6 text-center group-hover:bg-gray-300 transition-colors">
@@ -87,7 +92,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
           </div>
 
         </div>
-      ))}
+      )})}
     </div>
 
   </div>
@@ -141,20 +146,28 @@ const { data: productos, error } = await supabase.from('productos').select('*').
   import { supabase } from '../lib/supabase';
 
   document.addEventListener('DOMContentLoaded', async () => {
+    const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-      // Busca cualquier botón o enlace que lleve a "/login"
-      const btnLogin = document.querySelector('a[href="/login"]') as HTMLAnchorElement;
-      
-      if (btnLogin) {
-        btnLogin.textContent = 'Ir a mi Panel'; // Cambia el texto
-        btnLogin.className = 'px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition shadow-md'; // Lo resalta
+      // Actualizamos/Guardamos el email del usuario en la tabla perfiles automáticamente
+      // Esto asegura que siempre tengamos el email actualizado junto a su perfil
+      await supabase.from('perfiles').upsert({ 
+        id: session.user.id, 
+        email: session.user.email,
+        last_login: new Date().toISOString()
+      });
+
+      if (authBtn) {
+        authBtn.textContent = 'Mi Panel';
+        authBtn.classList.remove('invisible');
+        authBtn.className = 'ml-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
         
-        // Lo redirige a Admin o Dashboard según corresponda
         const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
-        btnLogin.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        authBtn.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
       }
+    } else {
+      authBtn?.classList.remove('invisible');
     }
   });
 </script>
