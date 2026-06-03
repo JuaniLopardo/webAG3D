@@ -1,0 +1,110 @@
+---
+import { supabase } from '../lib/supabase';
+import Layout from '../layouts/Layout.astro';
+
+const { data: productos } = await supabase.from('productos').select('*').order('id');
+---
+
+<Layout title="Catálogo de Productos">
+    <header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="transition-transform hover:scale-105 active:scale-95">
+          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
+        </a>
+
+        <button id="menu-toggle" class="lg:hidden p-2 focus:outline-none" aria-label="Abrir menú">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <nav class="hidden lg:flex gap-6 items-center">
+          <a href="/" class="hover:text-primary transition">Home</a>
+          <a href="/catalogo" class="text-primary font-bold transition">Catálogo</a>
+          <a href="/#faq" class="hover:text-primary transition">FAQ</a>
+          <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+        </nav>
+      </div>
+
+      <div id="mobile-menu" class="hidden lg:hidden bg-secondary border-t border-gray-800 transition-all duration-300">
+        <nav class="flex flex-col p-4 space-y-4">
+          <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-800 invisible">
+            <a id="mobile-login-btn" href="/login" class="w-full text-center py-4 bg-primary rounded-lg font-bold text-xl">Iniciar Sesión</a>
+          </div>
+          <a href="/" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Home</a>
+          <a href="/catalogo" class="mobile-link py-4 text-xl text-primary font-bold border-b border-gray-800/50">Catálogo</a>
+          <a href="/#faq" class="mobile-link py-4 text-xl hover:text-primary transition">FAQ</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="py-16 bg-gray-50 min-h-screen">
+      <div class="container mx-auto px-4 w-full max-w-7xl">
+        <h1 class="text-3xl md:text-5xl font-bold text-center mb-12 text-gray-900 tracking-tight">Nuestro Catálogo Completo</h1>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          {productos?.map((producto) => {
+            const getUrl = (f: any) => {
+              if (!f) return null;
+              if (typeof f === 'string') {
+                if (f.startsWith('{')) { try { return JSON.parse(f).url; } catch { return null; } }
+                return f;
+              }
+              return f.url;
+            };
+            const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
+            const foto1 = getUrl(fotos[0]);
+            return (
+              <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100 group">
+                {foto1 ? (
+                  <div class="relative w-full h-56 overflow-hidden bg-gray-100">
+                    <img src={foto1} alt={producto.titulo} class="absolute inset-0 w-full h-full object-cover object-center" />
+                  </div>
+                ) : (
+                  <div class="w-full h-56 bg-gray-200 flex items-center justify-center p-6 text-center">
+                    <span class="text-gray-400 font-medium text-sm">Sin imagen</span>
+                  </div>
+                )}
+                <div class="p-6 flex flex-col flex-grow">
+                  <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">{producto.titulo}</h3>
+                  <p class="text-gray-600 text-sm mb-6 line-clamp-2 flex-grow">{producto.descripcion}</p>
+                  <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors">Ver detalles</a>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+
+    <script>
+      import { supabase } from '../lib/supabase';
+      // Reutilizamos la lógica de Auth y menú mobile similar a index.astro
+      document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authBtn = document.getElementById('nav-auth-btn');
+        if (session && authBtn) {
+            authBtn.textContent = 'Mi Panel';
+            authBtn.classList.remove('invisible');
+            const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+            // @ts-ignore
+            authBtn.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        } else {
+            authBtn?.classList.remove('invisible');
+        }
+
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+
+        menuToggle?.addEventListener('click', () => {
+          mobileMenu?.classList.toggle('hidden');
+          if (mobileMenu?.classList.contains('hidden')) {
+            menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+          } else {
+            menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+          }
+        });
+      });
+    </script>
+</Layout>

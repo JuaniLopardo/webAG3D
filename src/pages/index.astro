@@ -24,7 +24,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         <!-- Navegación Desktop -->
         <nav class="hidden lg:flex gap-6 items-center">
           <a href="#home" class="hover:text-primary transition">Home</a>
-          <a href="#catalogo" class="hover:text-primary transition">Catálogo</a>
+          <a href="/catalogo" class="hover:text-primary transition">Catálogo</a>
           <a href="#clientes" class="hover:text-primary transition">Clientes</a>
           <a href="#faq" class="hover:text-primary transition">FAQ</a>
           <a href="#nosotros" class="hover:text-primary transition">Nosotros</a>
@@ -41,7 +41,7 @@ const { data: productos, error } = await supabase.from('productos').select('*').
             <a id="mobile-register-btn" href="/registro" class="w-full text-center py-4 border border-gray-700 rounded-lg font-bold text-xl">Registrarse</a>
           </div>
           <a href="#home" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Home</a>
-          <a href="#catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Catálogo</a>
+          <a href="/catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Catálogo</a>
           <a href="#clientes" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Clientes</a>
           <a href="#faq" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50">FAQ</a>
           <a href="#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition">Nosotros</a>
@@ -53,84 +53,14 @@ const { data: productos, error } = await supabase.from('productos').select('*').
       <div class="container mx-auto px-4">
         <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6">Llevamos tu logo a otro nivel</h1>
         <p class="text-lg md:text-xl text-gray-600 mb-10">Llaveros, indumentaria y accesorios impresos en 3D y personalizados para tu empresa.</p>
+        <a href="/catalogo" class="inline-block bg-primary hover:bg-primary-hover text-white text-xl font-bold px-10 py-5 rounded-full transition shadow-xl hover:scale-105 active:scale-95 mb-12">
+          Explorar Catálogo
+        </a>
         <div class="bg-gray-200 h-64 flex items-center justify-center rounded-lg shadow-inner border-2 border-dashed border-gray-400">
           <p class="text-gray-500">[Aquí irá el Carrusel de Imágenes]</p>
         </div>
       </div>
     </section>
-
-   <section class="py-16 bg-gray-50">
-  <div class="container mx-auto px-4 w-full max-w-7xl">
-    
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 tracking-tight">
-      Nuestros productos
-    </h2>
-    
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-      {productos?.map((producto) => {
-        // Función robusta para extraer la URL
-        const getUrl = (f: any) => {
-          if (!f) return null;
-          if (typeof f === 'string') {
-            // Si es un string que parece JSON, lo parseamos
-            if (f.startsWith('{')) {
-              try { return JSON.parse(f).url; } catch { return null; }
-            }
-            return f; // Es una URL directa (formato viejo)
-          }
-          return f.url; // Es un objeto (formato nuevo)
-        };
-
-        const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
-        const foto1 = getUrl(fotos[0]);
-        const foto2 = getUrl(fotos[1]);
-
-        return (
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100 group">
-          
-          {foto1 ? (
-            <div class="relative w-full h-56 overflow-hidden bg-gray-100">
-              
-              <img 
-                src={foto1} 
-                alt={producto.titulo} 
-                class={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out ${foto2 ? 'group-hover:opacity-0' : 'group-hover:opacity-90'}`} 
-              />
-              
-              {foto2 && (
-                <img 
-                  src={foto2} 
-                  alt={`${producto.titulo} - Vista alternativa`} 
-                  class="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out" 
-                />
-              )}
-            </div>
-          ) : (
-            <div class="w-full h-56 bg-gray-200 flex items-center justify-center p-6 text-center group-hover:bg-gray-300 transition-colors">
-              <span class="text-gray-400 font-medium text-sm">Sin imagen</span>
-            </div>
-          )}
-          
-          <div class="p-6 flex flex-col flex-grow">
-            <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">
-              {producto.titulo}
-            </h3>
-            
-            <p class="text-gray-600 text-sm mb-6 line-clamp-2 flex-grow">
-              {producto.descripcion}
-            </p>
-            
-            <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover active:bg-primary transition-colors shadow-sm">
-              Ver detalles
-            </a>
-          </div>
-
-        </div>
-      )})}
-    </div>
-
-  </div>
-</section>
 
     <section id="clientes" class="bg-gray-900 text-white py-20 text-center">
       <div class="container mx-auto px-4">
