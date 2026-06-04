@@ -131,6 +131,17 @@
         }
 
         if (data.user) {
+          // Creamos el perfil en la tabla pública inmediatamente
+          await supabase.from('perfiles').insert({
+            id: data.user.id,
+            email: email,
+            nombre_completo: nombre,
+            telefono: tel,
+            nombre_empresa: empresa,
+            instagram: instagram,
+            rol: 'user'
+          });
+
           alert('¡Registro exitoso! Ya puedes iniciar sesión.');
           window.location.href = '/login';
         }

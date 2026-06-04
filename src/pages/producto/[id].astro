@@ -1,6 +1,7 @@
 ---
 // src/pages/producto/[id].astro
 import { supabase } from '../../lib/supabase';
+import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
   const { data: productos } = await supabase.from('productos').select('id');
@@ -37,49 +38,7 @@ const fotoInicial = getUrl(fotos[0]);
 const mapeoFotos = producto.mapeo_fotos || {}; 
 ---
 
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{producto.titulo} - AG3D</title>
-  </head>
-  <body class="bg-gray-50 text-gray-800 font-sans">
-    
-    <header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="transition-transform hover:scale-105 active:scale-95">
-          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
-        </a>
-
-        <!-- Botón Hamburguesa -->
-        <button id="menu-toggle" class="lg:hidden p-2 focus:outline-none">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-
-        <!-- Navegación Desktop -->
-        <nav class="hidden lg:flex gap-6 items-center">
-          <a href="/" class="hover:text-primary transition">Home</a>
-          <a href="/catalogo" class="hover:text-primary transition">Catálogo</a>
-          <a href="/#faq" class="hover:text-primary transition">FAQ</a>
-          <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
-        </nav>
-      </div>
-
-      <!-- Menú Mobile -->
-      <div id="mobile-menu" class="hidden lg:hidden bg-secondary border-t border-gray-800">
-        <nav class="flex flex-col p-4 space-y-4">
-          <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-800 invisible">
-            <a id="mobile-login-btn" href="/login" class="w-full text-center py-4 bg-primary rounded-lg font-bold text-xl">Iniciar Sesión</a>
-            <a id="mobile-register-btn" href="/registro" class="w-full text-center py-4 border border-gray-700 rounded-lg font-bold text-xl">Registrarse</a>
-          </div>
-          <a href="/" class="py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Home</a>
-          <a href="/catalogo" class="py-4 text-xl hover:text-primary transition border-b border-gray-800/50">Catálogo</a>
-          <a href="/catalogo" class="py-4 text-xl text-primary font-bold italic">← Volver al Catálogo</a>
-        </nav>
-      </div>
-    </header>
+<Layout title={producto.titulo}>
 
     <main class="container mx-auto px-4 py-12 max-w-5xl">
       <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">

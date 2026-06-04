@@ -1,0 +1,112 @@
+---
+// src/components/Header.astro
+---
+<header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/" class="transition-transform hover:scale-105 active:scale-95">
+      <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
+    </a>
+
+    <!-- Botón Hamburguesa -->
+    <button id="menu-toggle" class="lg:hidden p-2 focus:outline-none" aria-label="Abrir menú">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+
+    <!-- Navegación Desktop -->
+    <nav class="hidden lg:flex gap-6 items-center">
+      <a href="/" class="hover:text-primary transition">Home</a>
+      <a href="/catalogo" class="hover:text-primary transition">Catálogo</a>
+      <a href="/#clientes" class="hover:text-primary transition">Clientes</a>
+      <a href="/#faq" class="hover:text-primary transition">FAQ</a>
+      <a href="/#nosotros" class="hover:text-primary transition">Nosotros</a>
+      <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+    </nav>
+  </div>
+
+  <!-- Menú Mobile Desplegable -->
+  <div id="mobile-menu" class="hidden lg:hidden bg-secondary border-t border-gray-800 transition-all duration-300">
+    <nav class="flex flex-col p-4 space-y-4">
+      <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-800 invisible">
+        <a id="mobile-login-btn" href="/login" class="w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white">Iniciar Sesión</a>
+        <a id="mobile-register-btn" href="/registro" class="w-full text-center py-4 border border-gray-700 rounded-lg font-bold text-xl text-white">Registrarse</a>
+      </div>
+      <a href="/" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Home</a>
+      <a href="/catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Catálogo</a>
+      <a href="/#clientes" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Clientes</a>
+      <a href="/#faq" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">FAQ</a>
+      <a href="/#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition text-white">Nosotros</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
+    const mobileAuthContainer = document.getElementById('mobile-auth-container');
+    const mobileLoginBtn = document.getElementById('mobile-login-btn') as HTMLAnchorElement;
+    const mobileRegisterBtn = document.getElementById('mobile-register-btn') as HTMLAnchorElement;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      const metadata = session.user.user_metadata;
+      
+      // Sincronización automática de perfil
+      await supabase.from('perfiles').upsert({ 
+        id: session.user.id, 
+        email: session.user.email,
+        nombre_completo: metadata?.nombre_completo,
+        telefono: metadata?.telefono,
+        nombre_empresa: metadata?.nombre_empresa,
+        instagram: metadata?.instagram,
+        last_login: new Date().toISOString()
+      });
+
+      if (authBtn) {
+        authBtn.textContent = 'Mi Panel';
+        authBtn.classList.remove('invisible');
+        authBtn.className = 'ml-4 bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
+        
+        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+        const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        authBtn.href = targetPath;
+
+        if (mobileAuthContainer && mobileLoginBtn) {
+          mobileLoginBtn.textContent = 'Mi Panel';
+          mobileLoginBtn.href = targetPath;
+          mobileLoginBtn.className = 'w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white';
+          mobileRegisterBtn?.classList.add('hidden');
+          mobileAuthContainer.classList.remove('invisible');
+        }
+      }
+    } else {
+      authBtn?.classList.remove('invisible');
+      mobileAuthContainer?.classList.remove('invisible');
+    }
+
+    // Lógica menú mobile
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+
+    menuToggle?.addEventListener('click', () => {
+      mobileMenu?.classList.toggle('hidden');
+      if (mobileMenu?.classList.contains('hidden')) {
+        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      } else {
+        menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+      }
+    });
+
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu?.classList.add('hidden');
+        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      });
+    });
+  });
+</script>

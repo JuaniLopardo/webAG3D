@@ -39,9 +39,29 @@
     <main class="flex-1 flex flex-col overflow-y-auto bg-gray-50 p-8">
       
       <section id="section-pedidos" class="hidden">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h1>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <p class="text-gray-500 animate-pulse">Cargando base de datos...</p>
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">Gestión de Pedidos</h1>
+          <button id="btn-nuevo-pedido-manual" class="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+            + Nuevo Pedido Manual
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th class="p-4 font-semibold">Pedido / Fecha</th>
+                  <th class="p-4 font-semibold">Cliente</th>
+                  <th class="p-4 font-semibold">Items</th>
+                  <th class="p-4 font-semibold">Estado / Seguimiento</th>
+                  <th class="p-4 font-semibold text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-pedidos-container" class="divide-y divide-gray-200">
+                <tr><td colspan="5" class="p-4 text-center text-gray-500 animate-pulse">Cargando pedidos...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -159,6 +179,36 @@
       </div>
     </div>
 
+    <!-- Modal Nuevo Pedido Manual -->
+    <div id="modal-nuevo-pedido" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col items-center justify-center z-50 px-4">
+      <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Cargar Pedido Manual</h3>
+        
+        <form id="form-nuevo-pedido" class="space-y-6">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Seleccionar Cliente</label>
+            <select id="new-order-cliente" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none transition bg-gray-50">
+              <option value="">Cargando clientes...</option>
+            </select>
+            <p class="text-[10px] text-gray-500 mt-1">El cliente debe estar registrado previamente para asociar el pedido.</p>
+          </div>
+
+          <div class="border-t border-gray-100 pt-4">
+            <div class="flex justify-between items-center mb-4">
+              <label class="block text-sm font-bold text-gray-700">Productos del Pedido</label>
+              <button type="button" id="btn-add-item-manual" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md font-bold transition">+ Agregar Producto</button>
+            </div>
+            <div id="items-manual-container" class="space-y-4"></div>
+          </div>
+
+          <div class="mt-8 flex justify-end gap-3 border-t border-gray-200 pt-4">
+            <button type="button" id="btn-close-order-modal" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
+            <button type="submit" id="btn-save-manual-order" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition">Crear Pedido</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal Visor de Imagen (para el catálogo) -->
     <div id="modal-visor" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-[60] p-4" onclick="this.classList.replace('flex','hidden')">
       <div class="relative max-w-4xl w-full flex flex-col items-center">
@@ -193,6 +243,10 @@
               elements.sec.classList.remove('hidden');
               elements.sec.classList.add('block');
               if (key === 'usuarios') cargarUsuarios();
+              if (key === 'pedidos') {
+                cargarPedidos();
+                cargarUsuarios(); // Cargamos usuarios también para que estén disponibles en el pedido manual
+              }
             } else {
               elements.btn.className = 'w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition';
               elements.sec.classList.remove('block');
@@ -294,7 +348,89 @@
         btnAddVar.addEventListener('click', () => crearFilaDeVariable());
 
         const productosContainer = document.getElementById('admin-productos-container') as HTMLElement;
+        const pedidosMainContainer = document.getElementById('admin-pedidos-container') as HTMLElement;
         const usuariosContainer = document.getElementById('admin-usuarios-container') as HTMLElement;
+        let listaUsuarios: any[] = [];
+
+        async function cargarPedidos() {
+          const { data: orders, error } = await supabase
+            .from('pedidos')
+            .select('*, perfiles(email, nombre_completo)')
+            .order('fecha_pedido', { ascending: false });
+
+          if (error || !orders) return;
+
+          const statuses = ['Recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado'];
+
+          pedidosMainContainer.innerHTML = orders.map(order => {
+            const fecha = new Date(order.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const cliente = order.perfiles || { email: 'Desconocido', nombre_completo: 'Desconocido' };
+            const items = Array.isArray(order.items) ? order.items : [];
+            
+            return `
+              <tr class="hover:bg-gray-50 transition border-b border-gray-100 text-sm">
+                <td class="p-4">
+                  <p class="font-bold text-gray-900">#${order.id}</p>
+                  <p class="text-[10px] text-gray-500">${fecha}</p>
+                </td>
+                <td class="p-4">
+                  <p class="font-medium text-gray-900">${cliente.nombre_completo || 'Sin nombre'}</p>
+                  <p class="text-[10px] text-gray-500">${cliente.email}</p>
+                </td>
+                <td class="p-4">
+                  <div class="space-y-1">
+                    ${items.map((item: any) => `
+                      <div class="text-[10px] text-gray-600">
+                        <span class="font-bold">${item.cantidad}x</span> ${item.titulo} 
+                        ${item.variante ? `<span class="italic">(${item.variante})</span>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </td>
+                <td class="p-4">
+                  <div class="flex flex-col gap-2">
+                    <select class="select-order-status border border-gray-300 rounded px-2 py-1 text-[10px] focus:ring-2 focus:ring-primary outline-none" data-id="${order.id}">
+                      ${statuses.map(s => `<option value="${s}" ${order.estado === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                    <input type="text" class="input-order-tracking border border-gray-300 rounded px-2 py-1 text-[10px] focus:ring-2 focus:ring-primary outline-none" 
+                      placeholder="N° de Tracking o URL" value="${order.tracking || ''}" />
+                  </div>
+                </td>
+                <td class="p-4 text-right">
+                  <button class="btn-actualizar-pedido bg-primary-light text-primary hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm" data-id="${order.id}">
+                    Actualizar
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          document.querySelectorAll('.btn-actualizar-pedido').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const target = e.currentTarget as HTMLButtonElement;
+              const id = target.dataset.id;
+              const row = target.closest('tr');
+              const nuevoEstado = (row?.querySelector('.select-order-status') as HTMLSelectElement).value;
+              const nuevoTracking = (row?.querySelector('.input-order-tracking') as HTMLInputElement).value;
+
+              target.textContent = '...';
+              target.disabled = true;
+
+              const { error: updateError } = await supabase
+                .from('pedidos')
+                .update({ estado: nuevoEstado, tracking: nuevoTracking })
+                .eq('id', id);
+
+              if (updateError) {
+                alert('Error al actualizar: ' + updateError.message);
+              }
+              
+              target.textContent = 'Actualizar';
+              target.disabled = false;
+            });
+          });
+        }
+
         const modalPedidos = document.getElementById('modal-pedidos') as HTMLDivElement;
         const btnCerrarPedidos = document.getElementById('btn-cerrar-pedidos') as HTMLButtonElement;
         const pedidosContainer = document.getElementById('pedidos-cliente-container') as HTMLDivElement;
@@ -306,6 +442,7 @@
         async function cargarUsuarios() {
           const { data: usuarios, error } = await supabase.from('perfiles').select('*').order('email');
           if (error || !usuarios) return;
+          listaUsuarios = usuarios;
 
           usuariosContainer.innerHTML = usuarios.map(u => {
             const igUser = u.instagram ? u.instagram.replace('@', '') : null;
@@ -319,7 +456,7 @@
             return `
               <tr class="hover:bg-gray-50 transition border-b border-gray-100">
                 <td class="p-4">
-                  <p class="font-medium text-gray-900 text-sm">${u.email || 'Sin email'}</p>
+                  <p class="font-medium text-gray-900 text-sm">${u.email || '<span class="text-red-400 italic">Email no sincronizado</span>'}</p>
                   <p class="text-[10px] text-gray-400 font-mono">${u.id}</p>
                 </td>
                 <td class="p-4">
@@ -569,6 +706,120 @@
         }
 
         cargarProductos();
+
+        // Lógica Pedido Manual
+        const modalPedidoManual = document.getElementById('modal-nuevo-pedido') as HTMLDivElement;
+        const btnNuevoPedidoManual = document.getElementById('btn-nuevo-pedido-manual') as HTMLButtonElement;
+        const btnCloseOrderModal = document.getElementById('btn-close-order-modal') as HTMLButtonElement;
+        const formNuevoPedido = document.getElementById('form-nuevo-pedido') as HTMLFormElement;
+        const itemsManualContainer = document.getElementById('items-manual-container') as HTMLDivElement;
+        const btnAddItemManual = document.getElementById('btn-add-item-manual') as HTMLButtonElement;
+        const selectClienteManual = document.getElementById('new-order-cliente') as HTMLSelectElement;
+
+        btnNuevoPedidoManual.addEventListener('click', () => {
+          // Poblar clientes
+          selectClienteManual.innerHTML = '<option value="">Selecciona un cliente</option>' + 
+            listaUsuarios.map(u => `<option value="${u.id}">${u.email} (${u.nombre_completo || 'Sin nombre'})</option>`).join('');
+          
+          itemsManualContainer.innerHTML = '';
+          crearFilaItemManual(); // Empezar con una fila
+          modalPedidoManual.classList.replace('hidden', 'flex');
+        });
+
+        btnCloseOrderModal.addEventListener('click', () => modalPedidoManual.classList.replace('flex', 'hidden'));
+
+        function crearFilaItemManual() {
+          const row = document.createElement('div');
+          row.className = 'item-manual-row p-3 bg-gray-50 rounded-lg border border-gray-200 relative pt-8 sm:pt-3';
+          
+          row.innerHTML = `
+            <button type="button" class="btn-remove-item absolute top-2 right-2 text-gray-400 hover:text-red-500 transition">&times;</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Producto</label>
+                <select class="select-prod-manual w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-white" required>
+                  <option value="">Selecciona...</option>
+                  ${listaProductos.map(p => `<option value="${p.id}">${p.titulo}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Cantidad</label>
+                <input type="number" class="input-qty-manual w-full px-2 py-1 border border-gray-300 rounded text-sm bg-white" min="1" value="1" required />
+              </div>
+              <div class="sm:col-span-2 vars-manual-container flex flex-wrap gap-2"></div>
+            </div>
+          `;
+
+          const selectProd = row.querySelector('.select-prod-manual') as HTMLSelectElement;
+          const varsContainer = row.querySelector('.vars-manual-container') as HTMLDivElement;
+
+          selectProd.addEventListener('change', () => {
+            const prodId = selectProd.value;
+            const prod = listaProductos.find(p => p.id.toString() === prodId);
+            varsContainer.innerHTML = '';
+            if (prod && prod.variables) {
+              Object.entries(prod.variables).forEach(([key, options]: [string, any]) => {
+                const sel = document.createElement('select');
+                sel.className = 'select-var-manual px-2 py-1 border border-gray-300 rounded text-[10px] bg-white';
+                sel.setAttribute('data-key', key);
+                sel.innerHTML = `<option value="">${key}...</option>` + 
+                  options.map((o: string) => `<option value="${o}">${o}</option>`).join('');
+                varsContainer.appendChild(sel);
+              });
+            }
+          });
+
+          row.querySelector('.btn-remove-item')?.addEventListener('click', () => row.remove());
+          itemsManualContainer.appendChild(row);
+        }
+
+        btnAddItemManual.addEventListener('click', () => crearFilaItemManual());
+
+        formNuevoPedido.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btnSave = document.getElementById('btn-save-manual-order') as HTMLButtonElement;
+          btnSave.disabled = true;
+          btnSave.textContent = 'Guardando...';
+
+          const items: any[] = [];
+          document.querySelectorAll('.item-manual-row').forEach(row => {
+            const prodId = (row.querySelector('.select-prod-manual') as HTMLSelectElement).value;
+            const qty = parseInt((row.querySelector('.input-qty-manual') as HTMLInputElement).value);
+            const product = listaProductos.find(p => p.id.toString() === prodId);
+            
+            let varianteText = '';
+            row.querySelectorAll('.select-var-manual').forEach(v => {
+              const val = (v as HTMLSelectElement).value;
+              if (val) varianteText += (varianteText ? ' / ' : '') + val;
+            });
+
+            if (product) {
+              items.push({
+                id: product.id,
+                titulo: product.titulo,
+                cantidad: qty,
+                variante: varianteText,
+                subtotal: (product.precio || 0) * qty
+              });
+            }
+          });
+
+          const { error } = await supabase.from('pedidos').insert({
+            cliente_id: selectClienteManual.value,
+            estado: 'Recibido',
+            items: items,
+            fecha_pedido: new Date().toISOString()
+          });
+
+          if (error) {
+            alert('Error al crear pedido: ' + error.message);
+          } else {
+            modalPedidoManual.classList.replace('flex', 'hidden');
+            cargarPedidos();
+          }
+          btnSave.disabled = false;
+          btnSave.textContent = 'Crear Pedido';
+        });
 
         btnNuevo.addEventListener('click', () => {
           modalTitulo.textContent = 'Agregar Nuevo Producto';

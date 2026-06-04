@@ -5,20 +5,6 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Mi Perfil">
   <div class="min-h-screen flex flex-col">
-    <header class="bg-secondary text-white shadow-md">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="transition-transform hover:scale-105 active:scale-95">
-          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
-        </a>
-        <div class="flex items-center gap-4">
-          <a href="/" class="text-sm hidden sm:block hover:text-blue-400 transition">Volver al Inicio</a>
-          <button id="btn-logout-dash" class="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
-            Cerrar Sesión
-          </button>
-        </div>
-      </div>
-    </header>
-
     <main class="container mx-auto px-4 py-12 max-w-2xl flex-grow">
       <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
         <div class="mb-8 border-b pb-4">
@@ -57,6 +43,9 @@ import Layout from '../layouts/Layout.astro';
           <div id="mensaje-dash" class="text-center h-4 text-sm font-semibold"></div>
 
           <div class="pt-4">
+            <button type="button" id="btn-logout-dash" class="w-full mb-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 rounded-xl transition text-sm">
+              Cerrar Sesión
+            </button>
             <button type="submit" id="btn-guardar-perfil" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98]">
               Guardar Cambios
             </button>

@@ -86,21 +86,21 @@
         }
 
         if (data.user) {
-          // 2. Consultar el rol del usuario para redirigir
+          // 2. Sincronizar email y login en el perfil
+          await supabase.from('perfiles').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            last_login: new Date().toISOString()
+          }, { onConflict: 'id' });
+
+          // 3. Consultar el rol para redirigir
           const { data: perfil, error: errorPerfil } = await supabase
             .from('perfiles')
             .select('rol')
             .eq('id', data.user.id)
             .single();
 
-          if (errorPerfil) {
-            // Si no hay perfil aún, lo mandamos al dashboard por defecto
-            window.location.href = '/dashboard';
-            return;
-          }
-
-          // 3. Redirección basada en rol
-          if (perfil.rol === 'admin') {
+          if (perfil?.rol === 'admin') {
             window.location.href = '/admin';
           } else {
             window.location.href = '/dashboard';
