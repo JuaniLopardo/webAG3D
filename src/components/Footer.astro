@@ -1,0 +1,58 @@
+---
+// src/components/Footer.astro
+const WHATSAPP_NUMBER = "5491112345678"; // Reemplazar con el real
+const EMAIL_CONTACTO = "contacto@ag3d.com";
+---
+<footer class="bg-secondary text-white pt-16 pb-8 border-t border-gray-800">
+  <div class="container mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      
+      <!-- Columna 1: Marca -->
+      <div class="md:col-span-1">
+        <a href="/" class="inline-block mb-6">
+          <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto brightness-0 invert" />
+        </a>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Llevamos la identidad de tu marca a productos tangibles con tecnología 3D de alta calidad.
+        </p>
+      </div>
+
+      <!-- Columna 2: Navegación -->
+      <div>
+        <h3 class="text-lg font-bold mb-6 text-primary">Navegación</h3>
+        <ul class="space-y-4 text-gray-400 text-sm">
+          <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+          <li><a href="/catalogo" class="hover:text-white transition">Catálogo</a></li>
+          <li><a href="/#faq" class="hover:text-white transition">Preguntas Frecuentes</a></li>
+          <li><a href="/login" class="hover:text-white transition">Acceso Clientes</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Contacto -->
+      <div>
+        <h3 class="text-lg font-bold mb-6 text-primary">Contacto</h3>
+        <ul class="space-y-4 text-gray-400 text-sm">
+          <li class="flex items-center gap-2">
+            <span class="text-primary font-bold">Email:</span> {EMAIL_CONTACTO}
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-primary font-bold">WhatsApp:</span> +{WHATSAPP_NUMBER}
+          </li>
+          <li class="italic">Buenos Aires, Argentina</li>
+        </ul>
+      </div>
+
+      <!-- Columna 4: Redes -->
+      <div>
+        <h3 class="text-lg font-bold mb-6 text-primary">Redes Sociales</h3>
+        <a href="https://instagram.com/AG3D_oficial" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-lg hover:bg-primary transition-colors text-sm font-semibold">
+          Seguinos en Instagram
+        </a>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-xs">
+      <p>&copy; {new Date().getFullYear()} AG3D - Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

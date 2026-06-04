@@ -35,6 +35,7 @@ const getUrl = (f: any) => {
 const fotoInicial = getUrl(fotos[0]);
 
 // Preparación: en el futuro traeremos el mapeo desde la base de datos (Ej: {"Negro": 1})
+const WHATSAPP_NUMBER = "5491112345678"; // Reemplazar con el real
 const mapeoFotos = producto.mapeo_fotos || {}; 
 ---
 
@@ -109,7 +110,7 @@ const mapeoFotos = producto.mapeo_fotos || {};
             </div>
           )}
 
-          <a href={`https://wa.me/1234567890?text=Hola,%20quiero%20consultar%20por%20el%20producto:%20${producto.titulo}`} target="_blank" class="inline-block w-full text-center px-8 py-4 bg-accent text-white font-bold rounded-xl hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl">
+          <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20quiero%20consultar%20por%20el%20producto:%20${producto.titulo}`} target="_blank" class="inline-block w-full text-center px-8 py-4 bg-accent text-white font-bold rounded-xl hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl">
             Consultar por WhatsApp
           </a>
         </div>

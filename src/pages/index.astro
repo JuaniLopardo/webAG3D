@@ -14,8 +14,10 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         <a href="/catalogo" class="inline-block bg-primary hover:bg-primary-hover text-white text-xl font-bold px-10 py-5 rounded-full transition shadow-xl hover:scale-105 active:scale-95 mb-12">
           Explorar Catálogo
         </a>
-        <div class="bg-gray-200 h-64 flex items-center justify-center rounded-lg shadow-inner border-2 border-dashed border-gray-400">
-          <p class="text-gray-500">[Aquí irá el Carrusel de Imágenes]</p>
+        <!-- TODO: Reemplazar por componente de carrusel real -->
+        <div class="relative w-full max-w-4xl mx-auto h-64 md:h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
+          <img src="/assets/hero-placeholder.jpg" class="w-full h-full object-cover opacity-50" alt="Muestra de impresión 3D" />
+          <div class="absolute inset-0 flex items-center justify-center text-gray-400 italic">Carrusel de fotos de trabajos realizados</div>
         </div>
       </div>
     </section>
@@ -24,8 +26,12 @@ const { data: productos, error } = await supabase.from('productos').select('*').
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-6">Confían en nosotros</h2>
         <p class="mb-10 text-gray-400">Empresas que ya tienen sus productos AG3D.</p>
-        <div class="bg-gray-800 h-32 flex items-center justify-center rounded-lg border border-gray-700">
-          <p class="text-gray-500">[Carrusel de Logos de Clientes]</p>
+        <!-- TODO: Cargar logos en public/logos/ y mapearlos aquí -->
+        <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all">
+           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
+           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
+           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
+           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
         </div>
       </div>
     </section>
@@ -45,94 +51,4 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         </details>
       </div>
     </section>
-
-    <footer id="nosotros" class="bg-gray-200 py-12">
-      <div class="container mx-auto px-4 text-center">
-        <h2 class="text-2xl font-bold mb-4">Sobre Nosotros</h2>
-        <p class="text-gray-700 mb-8 max-w-2xl mx-auto">Somos especialistas en llevar la identidad de tu marca a productos tangibles de alta calidad mediante tecnología de impresión 3D y técnicas tradicionales.</p>
-        
-        <div class="flex flex-col md:flex-row justify-center gap-8 mt-8 border-t border-gray-400 pt-8">
-          <div>
-            <h3 class="font-bold text-gray-900">Contacto</h3>
-            <p class="text-gray-600">Email: contacto@ag3d.com</p>
-          </div>
-          <div>
-            <h3 class="font-bold text-gray-900">Redes Sociales</h3>
-            <p class="text-gray-600">Instagram: @AG3D_oficial</p>
-          </div>
-        </div>
-      </div>
-    </footer>
-    <script>
-  // @ts-ignore
-  import { supabase } from '../lib/supabase';
-
-  document.addEventListener('DOMContentLoaded', async () => {
-    const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
-    const mobileAuthContainer = document.getElementById('mobile-auth-container');
-    const mobileLoginBtn = document.getElementById('mobile-login-btn') as HTMLAnchorElement;
-    const mobileRegisterBtn = document.getElementById('mobile-register-btn') as HTMLAnchorElement;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-      const metadata = session.user.user_metadata;
-      
-      await supabase.from('perfiles').upsert({ 
-        id: session.user.id, 
-        email: session.user.email,
-        nombre_completo: metadata.nombre_completo,
-        telefono: metadata.telefono,
-        nombre_empresa: metadata.nombre_empresa,
-        instagram: metadata.instagram,
-        last_login: new Date().toISOString()
-      });
-
-      if (authBtn) {
-        authBtn.textContent = 'Mi Panel';
-        authBtn.classList.remove('invisible');
-        authBtn.className = 'ml-4 bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
-        
-        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
-        const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
-        authBtn.href = targetPath;
-
-        // Mobile: Actualizamos los botones del menú desplegable
-        if (mobileAuthContainer && mobileLoginBtn) {
-          mobileLoginBtn.textContent = 'Mi Panel';
-          mobileLoginBtn.href = targetPath;
-          mobileLoginBtn.className = 'w-full text-center py-4 bg-primary rounded-lg font-bold text-xl';
-          mobileRegisterBtn?.classList.add('hidden'); // Ocultamos registro si ya está logueado
-          mobileAuthContainer.classList.remove('invisible');
-        }
-      }
-    } else {
-      authBtn?.classList.remove('invisible');
-      mobileAuthContainer?.classList.remove('invisible');
-    }
-
-    // Lógica para abrir/cerrar el menú mobile
-    const menuToggle = document.getElementById('menu-toggle');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const menuIcon = document.getElementById('menu-icon');
-
-    menuToggle?.addEventListener('click', () => {
-      mobileMenu?.classList.toggle('hidden');
-      // Cambiamos el icono entre hamburguesa y X
-      if (mobileMenu?.classList.contains('hidden')) {
-        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-      } else {
-        menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-      }
-    });
-
-    // Cerrar el menú automáticamente al hacer clic en un link (útil para anchors en la misma página)
-    document.querySelectorAll('.mobile-link').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu?.classList.add('hidden');
-        menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-      });
-    });
-  });
-</script>
 </Layout>
