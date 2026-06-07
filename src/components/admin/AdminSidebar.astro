@@ -1,0 +1,29 @@
+---
+// src/components/admin/AdminSidebar.astro
+---
+<aside class="w-64 bg-gray-900 text-white flex flex-col transition-all shrink-0">
+  <div class="p-6 border-b border-gray-800">
+    <a href="/" class="block transition-transform hover:scale-105">
+      <img src="/logo.png" alt="AG3D Logo" class="h-8 w-auto object-contain" />
+    </a>
+  </div>
+  
+  <nav class="flex-1 p-4 space-y-2">
+    <button id="tab-pedidos" class="w-full text-left px-4 py-3 rounded-lg bg-primary text-white font-medium transition">
+      📦 Gestión de Pedidos
+    </button>
+    <button id="tab-usuarios" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition">
+      👥 Clientes Registrados
+    </button>
+    <button id="tab-productos" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition">
+      🏷️ Catálogo
+    </button>
+  </nav>
+
+  <div class="p-4 border-t border-gray-800">
+    <a href="/" class="block w-full text-center px-4 py-2 mb-2 text-sm text-gray-400 hover:text-white transition">Ver sitio web</a>
+    <button id="btn-logout" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+      Cerrar Sesión
+    </button>
+  </div>
+</aside>

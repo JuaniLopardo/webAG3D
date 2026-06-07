@@ -1,5 +1,4 @@
 ---
-// src/pages/producto/[id].astro
 import { supabase } from '../../lib/supabase';
 import Layout from '../../layouts/Layout.astro';
 
@@ -20,7 +19,6 @@ if (!producto) {
 const variablesSeguras = producto.variables || {};
 const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
 
-// Función de ayuda para extraer la URL (Server Side)
 const getUrl = (f: any) => {
   if (!f) return null;
   if (typeof f === 'string') {
@@ -33,26 +31,28 @@ const getUrl = (f: any) => {
 };
 
 const fotoInicial = getUrl(fotos[0]);
+const mapeoFotos = producto.mapeo_fotos || {};
+const cantidadMinima = Number(producto.cantidad_minima) || 1;
 
-// Preparación: en el futuro traeremos el mapeo desde la base de datos (Ej: {"Negro": 1})
-const WHATSAPP_NUMBER = "5491112345678"; // Reemplazar con el real
-const mapeoFotos = producto.mapeo_fotos || {}; 
+// Detectar si el producto tiene variables
+const tieneVariables = Object.keys(variablesSeguras).length > 0;
+const nombresVariables = Object.keys(variablesSeguras);
 ---
 
 <Layout title={producto.titulo}>
 
     <main class="container mx-auto px-4 py-12 max-w-5xl">
       <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
-        
+
         <div class="md:w-1/2 bg-white flex flex-col items-center justify-center p-4 md:p-8 relative group">
           {fotos.length > 0 ? (
-            <div 
-              class="w-full max-w-md relative" 
-              id="galeria-container" 
+            <div
+              class="w-full max-w-md relative"
+              id="galeria-container"
               data-fotos={JSON.stringify(fotos)}
               data-mapeo={JSON.stringify(mapeoFotos)}
             >
-              
+
               <div class="aspect-square w-full bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm relative">
                 <img id="foto-principal" src={fotoInicial} alt={producto.titulo} class="w-full h-full object-contain transition-opacity duration-300" />
               </div>
@@ -65,7 +65,7 @@ const mapeoFotos = producto.mapeo_fotos || {};
                   <button id="btn-next" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center shadow-md font-bold text-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110">
                     &gt;
                   </button>
-                  
+
                   <div class="flex justify-center gap-2 mt-4">
                     {fotos.map((_: any, i: number) => (
                       <div class={`w-2.5 h-2.5 rounded-full dot-indicador transition-colors ${i === 0 ? 'bg-primary' : 'bg-gray-300'}`} data-index={i}></div>
@@ -80,26 +80,30 @@ const mapeoFotos = producto.mapeo_fotos || {};
             </div>
           )}
         </div>
-        
+
         <div class="md:w-1/2 p-8 md:p-12">
           <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{producto.titulo}</h1>
           <p class="text-gray-600 mb-6 text-lg leading-relaxed">{producto.descripcion}</p>
-          
+
           <div class="bg-primary-light border-l-4 border-primary p-4 mb-8">
-            <p class="text-primary font-semibold">Pedido mínimo: <span class="text-secondary font-bold">{producto.cantidad_minima} unidades</span></p>
+            <p class="text-primary font-semibold">
+              Pedido mínimo: <span id="minimo-num" class="text-secondary font-bold">{cantidadMinima} unidades</span>
+            </p>
+            <p class="text-xs text-gray-500 mt-1">Podés combinar diferentes variables para llegar al mínimo.</p>
           </div>
 
-          {Object.keys(variablesSeguras).length > 0 && (
-            <div class="mb-10 space-y-6">
+          {tieneVariables && (
+            <div class="mb-8 space-y-6">
               {Object.entries(variablesSeguras).map(([clave, valores]) => (
                 <div>
                   <span class="block font-bold text-gray-900 capitalize mb-3 text-sm tracking-wide">{clave}:</span>
-                  <div class="flex flex-wrap gap-2">
+                  <div class="flex flex-wrap gap-2" data-var-group={clave}>
                     {/* @ts-ignore */}
                     {valores.map((valor) => (
-                      <button 
+                      <button
                         class="var-btn px-4 py-2 bg-white text-gray-700 rounded-lg text-sm font-medium border-2 border-gray-200 hover:border-primary hover:text-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary-light"
                         data-valor={valor}
+                        data-var-key={clave}
                       >
                         {valor}
                       </button>
@@ -110,168 +114,269 @@ const mapeoFotos = producto.mapeo_fotos || {};
             </div>
           )}
 
-          <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20quiero%20consultar%20por%20el%20producto:%20${producto.titulo}`} target="_blank" class="inline-block w-full text-center px-8 py-4 bg-accent text-white font-bold rounded-xl hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl">
-            Consultar por WhatsApp
-          </a>
+          {/* === Bloque solo para clientes (oculto si es admin) === */}
+          <div id="cliente-only">
+            {/* === Selector de cantidad === */}
+            <div class="mb-6">
+              <label class="block font-bold text-gray-900 text-sm tracking-wide mb-2">Cantidad:</label>
+              <div class="flex items-center gap-3">
+                <button id="qty-minus" type="button" class="w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-primary hover:text-primary text-gray-600 font-bold text-lg transition">−</button>
+                <input
+                  id="qty-input"
+                  type="number"
+                  min="1"
+                  value="1"
+                  class="w-20 h-10 text-center border-2 border-gray-200 rounded-lg font-semibold focus:outline-none focus:border-primary"
+                />
+                <button id="qty-plus" type="button" class="w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-primary hover:text-primary text-gray-600 font-bold text-lg transition">+</button>
+                <span class="text-sm text-gray-500">unidades</span>
+              </div>
+            </div>
+
+            {/* === Estado del carrito para este producto === */}
+            <div id="cart-status" class="mb-4 text-sm text-gray-600"></div>
+
+            <button
+              id="btn-add-cart"
+              type="button"
+              data-titulo={producto.titulo}
+              data-foto={fotoInicial || ''}
+              data-minimo={cantidadMinima}
+              disabled
+              class="w-full px-8 py-4 bg-primary text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            >
+              Agregar al carrito
+            </button>
+
+            <p id="login-hint" class="text-xs text-gray-500 mt-3 text-center">
+              <a href="/login" class="text-primary hover:underline">Iniciá sesión</a> para agregar al carrito.
+            </p>
+          </div>
+
+          {/* === Mensaje solo para admins === */}
+          <div id="admin-only" class="hidden bg-gray-100 border-l-4 border-gray-400 p-4 rounded-r-lg">
+            <p class="text-gray-700 font-semibold mb-1">Estás navegando como administrador.</p>
+            <p class="text-sm text-gray-500">Para gestionar este producto, andá al <a href="/admin" class="text-primary hover:underline font-semibold">panel de administración</a>.</p>
+          </div>
         </div>
-        
+
       </div>
     </main>
 
     <script>
-      import { supabase } from '../../lib/supabase';
+      import { supabase } from '../../lib/supabase.js';
+      import { addItem, getCountByProducto } from '../../lib/cart.js';
+      import { isAdmin } from '../../lib/auth.js';
 
-      document.addEventListener('DOMContentLoaded', () => {
-        // Lógica de Autenticación para el Header
-        const checkAuth = async () => {
-          const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
-          const mobileAuthContainer = document.getElementById('mobile-auth-container');
-          const mobileLoginBtn = document.getElementById('mobile-login-btn') as HTMLAnchorElement;
-          const mobileRegisterBtn = document.getElementById('mobile-register-btn') as HTMLAnchorElement;
+      // Si es admin, no mostramos las acciones de carrito
+      isAdmin().then((admin) => {
+        if (admin) {
+          document.getElementById('cliente-only')?.classList.add('hidden');
+          document.getElementById('admin-only')?.classList.remove('hidden');
+        }
+      });
 
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            if (authBtn) {
-              authBtn.textContent = 'Mi Panel';
-              authBtn.classList.remove('invisible');
-              authBtn.className = 'ml-4 bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
-              
-              const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
-              const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
-              authBtn.href = targetPath;
+      // === Datos del producto (del HTML) ===
+      const galeria = document.getElementById('galeria-container');
+      const fotosRaw = galeria?.getAttribute('data-fotos');
+      const fotos = fotosRaw ? JSON.parse(fotosRaw) : [];
 
-              if (mobileAuthContainer && mobileLoginBtn) {
-                mobileLoginBtn.textContent = 'Mi Panel';
-                mobileLoginBtn.href = targetPath;
-                mobileLoginBtn.className = 'w-full text-center py-4 bg-primary rounded-lg font-bold text-xl';
-                mobileRegisterBtn?.classList.add('hidden');
-                mobileAuthContainer.classList.remove('invisible');
-              }
-            }
-          } else {
-            authBtn?.classList.remove('invisible');
-            mobileAuthContainer?.classList.remove('invisible');
+      const productoId = Number(galeria ? new URLSearchParams(location.search).get('pid') || location.pathname.split('/').pop() : 0) || Number(location.pathname.split('/').pop());
+
+      // Leemos los datos del producto desde data-attrs del botón
+      const addBtn = document.getElementById('btn-add-cart') as HTMLButtonElement;
+      const titulo = addBtn?.dataset.titulo || '';
+      const fotoUrl = addBtn?.dataset.foto || '';
+      const cantidadMinima = Number(addBtn?.dataset.minimo || 1);
+
+      // === Estado selección de variables ===
+      const seleccion: Record<string, string> = {};
+
+      // === Galería ===
+      const getUrlSafe = (f: any) => {
+        if (!f) return '';
+        if (typeof f === 'string') {
+          if (f.startsWith('{')) {
+            try { return JSON.parse(f).url; } catch { return f; }
           }
-        };
+          return f;
+        }
+        return f.url || '';
+      };
 
-        checkAuth();
+      const imgPrincipal = document.getElementById('foto-principal') as HTMLImageElement;
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const dots = document.querySelectorAll('.dot-indicador');
+      const varBtns = document.querySelectorAll('.var-btn');
+      let indexActual = 0;
 
-        // Lógica Menú Mobile
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-
-        menuToggle?.addEventListener('click', () => {
-          mobileMenu?.classList.toggle('hidden');
-          if (mobileMenu?.classList.contains('hidden')) {
-            menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      function cambiarFoto(nuevoIndex: number) {
+        if (nuevoIndex < 0 || nuevoIndex >= fotos.length) return;
+        indexActual = nuevoIndex;
+        imgPrincipal.style.opacity = '0.5';
+        setTimeout(() => {
+          imgPrincipal.src = getUrlSafe(fotos[indexActual]);
+          imgPrincipal.style.opacity = '1';
+        }, 150);
+        dots.forEach((dot, i) => {
+          if (i === indexActual) {
+            dot.classList.replace('bg-gray-300', 'bg-primary');
           } else {
-            menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            dot.classList.replace('bg-primary', 'bg-gray-300');
           }
         });
+      }
 
-        const galeria = document.getElementById('galeria-container');
-        if (!galeria) return;
-
-        // Extraemos los datos ocultos en el HTML
-        const fotosRaw = galeria.getAttribute('data-fotos');
-        const mapeoRaw = galeria.getAttribute('data-mapeo');
-        
-        if (!fotosRaw) return;
-        const fotos = JSON.parse(fotosRaw);
-        const mapeoFotos = mapeoRaw ? JSON.parse(mapeoRaw) : {};
-        
-        // Función de ayuda para extraer la URL (Client Side)
-        const getUrlSafe = (f: any) => {
-          if (!f) return '';
-          if (typeof f === 'string') {
-            if (f.startsWith('{')) {
-              try { return JSON.parse(f).url; } catch { return f; }
-            }
-            return f;
-          }
-          return f.url || '';
-        };
-
-        const imgPrincipal = document.getElementById('foto-principal') as HTMLImageElement;
-        const btnPrev = document.getElementById('btn-prev');
-        const btnNext = document.getElementById('btn-next');
-        const dots = document.querySelectorAll('.dot-indicador');
-        const varBtns = document.querySelectorAll('.var-btn');
-        
-        let indexActual = 0;
-
-        // Función central para cambiar la imagen
-        function cambiarFoto(nuevoIndex: number) {
-          if (nuevoIndex < 0 || nuevoIndex >= fotos.length) return;
-          indexActual = nuevoIndex;
-          
-          // Efecto de desvanecimiento
-          imgPrincipal.style.opacity = '0.5';
-          setTimeout(() => {
-            imgPrincipal.src = getUrlSafe(fotos[indexActual]);
-            imgPrincipal.style.opacity = '1';
-          }, 150);
-          
-          // Actualizar puntos inferiores
-          dots.forEach((dot, i) => {
-            if (i === indexActual) {
-              dot.classList.replace('bg-gray-300', 'bg-primary');
-            } else {
-              dot.classList.replace('bg-primary', 'bg-gray-300');
-            }
-          });
-        }
-
-        // Eventos del Carrusel
-        if (btnPrev && btnNext) {
-          btnPrev.addEventListener('click', () => {
-            let nuevo = indexActual - 1;
-            if (nuevo < 0) nuevo = fotos.length - 1;
-            cambiarFoto(nuevo);
-          });
-
-          btnNext.addEventListener('click', () => {
-            let nuevo = indexActual + 1;
-            if (nuevo >= fotos.length) nuevo = 0;
-            cambiarFoto(nuevo);
-          });
-        }
-
-        // Lógica de click en las variables (talles, colores, etc)
-        varBtns.forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const target = e.currentTarget as HTMLButtonElement;
-            const valor = target.getAttribute('data-valor');
-            
-            // Efecto visual: deseleccionamos todos los hermanos y seleccionamos este
-            const hermanos = target.parentElement?.querySelectorAll('.var-btn') || [];
-            hermanos.forEach(h => {
-              h.classList.remove('border-primary', 'bg-primary-light', 'text-primary');
-              h.classList.add('border-gray-200', 'text-gray-700');
-            });
-            target.classList.remove('border-gray-200', 'text-gray-700');
-            target.classList.add('border-primary', 'bg-primary-light', 'text-primary');
-
-            // Buscamos si hay una foto que tenga esta variable asociada
-            if (valor) {
-              const indexEncontrado = fotos.findIndex((f: any) => {
-                const data = (typeof f === 'string' && f.startsWith('{')) ? JSON.parse(f) : f;
-                return typeof data === 'object' && data.variableAsociada === valor;
-              });
-
-              if (indexEncontrado !== -1) {
-                cambiarFoto(indexEncontrado);
-              } else if (mapeoFotos[valor] !== undefined) {
-                // Mantenemos compatibilidad con el mapeo manual si existiera
-                cambiarFoto(mapeoFotos[valor]);
-              }
-            }
-          });
+      if (btnPrev && btnNext) {
+        btnPrev.addEventListener('click', () => {
+          let nuevo = indexActual - 1;
+          if (nuevo < 0) nuevo = fotos.length - 1;
+          cambiarFoto(nuevo);
         });
+        btnNext.addEventListener('click', () => {
+          let nuevo = indexActual + 1;
+          if (nuevo >= fotos.length) nuevo = 0;
+          cambiarFoto(nuevo);
+        });
+      }
 
+      varBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLButtonElement;
+          const valor = target.getAttribute('data-valor');
+          const varKey = target.getAttribute('data-var-key') || '';
+          if (!valor || !varKey) return;
+
+          const hermanos = target.parentElement?.querySelectorAll('.var-btn') || [];
+          hermanos.forEach(h => {
+            h.classList.remove('border-primary', 'bg-primary-light', 'text-primary');
+            h.classList.add('border-gray-200', 'text-gray-700');
+          });
+          target.classList.remove('border-gray-200', 'text-gray-700');
+          target.classList.add('border-primary', 'bg-primary-light', 'text-primary');
+
+          seleccion[varKey] = valor;
+          actualizarEstado();
+
+          const mapeo = galeria?.getAttribute('data-mapeo');
+          const mapeoFotos = mapeo ? JSON.parse(mapeo) : {};
+          const indexEncontrado = fotos.findIndex((f: any) => {
+            const data = (typeof f === 'string' && f.startsWith('{')) ? JSON.parse(f) : f;
+            return typeof data === 'object' && data.variableAsociada === valor;
+          });
+          if (indexEncontrado !== -1) cambiarFoto(indexEncontrado);
+          else if (mapeoFotos[valor] !== undefined) cambiarFoto(mapeoFotos[valor]);
+        });
+      });
+
+      // === Cantidad ===
+      const qtyInput = document.getElementById('qty-input') as HTMLInputElement;
+      const qtyMinus = document.getElementById('qty-minus');
+      const qtyPlus = document.getElementById('qty-plus');
+      qtyMinus?.addEventListener('click', () => {
+        const v = Math.max(1, Number(qtyInput.value) - 1);
+        qtyInput.value = String(v);
+        actualizarEstado();
+      });
+      qtyPlus?.addEventListener('click', () => {
+        qtyInput.value = String(Number(qtyInput.value) + 1);
+        actualizarEstado();
+      });
+      qtyInput?.addEventListener('input', () => {
+        if (Number(qtyInput.value) < 1) qtyInput.value = '1';
+        actualizarEstado();
+      });
+
+      // === Lógica de habilitación del botón ===
+      const cartStatus = document.getElementById('cart-status') as HTMLDivElement;
+      const varGroups = document.querySelectorAll('[data-var-group]');
+      let currentSession: any = null;
+
+      function variablesCompletas(): boolean {
+        if (varGroups.length === 0) return true;
+        for (const g of Array.from(varGroups)) {
+          const k = (g as HTMLElement).dataset.varGroup || '';
+          if (!seleccion[k]) return false;
+        }
+        return true;
+      }
+
+      function actualizarEstado() {
+        const totalEnCarrito = getCountByProducto(productoId);
+
+        // 1. Login
+        if (!currentSession) {
+          addBtn.disabled = true;
+          addBtn.textContent = 'Iniciá sesión para agregar al carrito';
+          cartStatus.innerHTML = '';
+          document.getElementById('login-hint')?.classList.remove('hidden');
+          return;
+        }
+        document.getElementById('login-hint')?.classList.add('hidden');
+
+        // 2. Variables completas
+        if (!variablesCompletas()) {
+          addBtn.disabled = true;
+          addBtn.textContent = 'Elegí todas las variables';
+          cartStatus.innerHTML = '';
+          return;
+        }
+
+        // 3. Siempre habilitado. Solo informamos el progreso hacia el mínimo.
+        addBtn.disabled = false;
+        addBtn.textContent = 'Agregar al carrito';
+
+        if (totalEnCarrito === 0) {
+          cartStatus.innerHTML = `<span class="text-gray-500">Podés ir sumando unidades y variables. El pedido se confirma al llegar al mínimo de <b>${cantidadMinima}</b>.</span>`;
+        } else if (totalEnCarrito < cantidadMinima) {
+          const faltan = cantidadMinima - totalEnCarrito;
+          cartStatus.innerHTML = `<span class="text-amber-600">Llevás <b>${totalEnCarrito}</b> en carrito. Faltan <b>${faltan}</b> para el mínimo (podés sumar más variables).</span>`;
+        } else {
+          cartStatus.innerHTML = `<span class="text-green-600 font-semibold">✓ Mínimo cubierto. Llevás ${totalEnCarrito} en carrito.</span>`;
+        }
+      }
+
+      // === Acción agregar al carrito ===
+      addBtn?.addEventListener('click', async () => {
+        const cant = Number(qtyInput.value) || 1;
+        if (addBtn.disabled) return;
+        if (!currentSession) {
+          alert('Necesitás iniciar sesión para agregar al carrito.');
+          window.location.href = '/login?redirect=' + encodeURIComponent(location.pathname);
+          return;
+        }
+        if (!variablesCompletas()) {
+          alert('Elegí una opción de cada variable antes de agregar.');
+          return;
+        }
+        addItem({
+          producto_id: productoId,
+          titulo: titulo || (document.querySelector('h1')?.textContent || '').trim(),
+          foto_url: fotoUrl || getUrlSafe(fotos[0]),
+          cantidad_minima: cantidadMinima,
+          variables: { ...seleccion },
+          cantidad: cant,
+        });
+        addBtn.textContent = '¡Agregado!';
+        addBtn.classList.replace('bg-primary', 'bg-green-500');
+        setTimeout(() => {
+          addBtn.classList.replace('bg-green-500', 'bg-primary');
+          actualizarEstado();
+        }, 1500);
+      });
+
+      // === Sesión: usar INITIAL_SESSION para evitar race con el primer render ===
+      supabase.auth.onAuthStateChange((event, session) => {
+        currentSession = session;
+        actualizarEstado();
+      });
+
+      // Carga inicial explícita (cubre el caso de INITIAL_SESSION que ya disparó antes del listener)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        currentSession = session;
+        actualizarEstado();
       });
     </script>
-  </body>
-</html>
+
+</Layout>

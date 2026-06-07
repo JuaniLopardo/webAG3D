@@ -1,0 +1,10 @@
+---
+// src/components/admin/ModalVisorImagen.astro
+---
+<div id="modal-visor" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-[60] p-4" onclick="this.classList.replace('flex','hidden')">
+  <div class="relative max-w-4xl w-full flex flex-col items-center">
+    <img id="img-visor" src="" class="max-h-[85vh] rounded-lg shadow-2xl border-4 border-white" />
+    <p id="txt-visor" class="text-white mt-4 text-xl font-bold bg-black bg-opacity-50 px-4 py-2 rounded-full"></p>
+    <button class="absolute top-0 right-0 text-white text-4xl p-4">&times;</button>
+  </div>
+</div>

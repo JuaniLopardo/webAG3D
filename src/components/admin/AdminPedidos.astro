@@ -1,0 +1,29 @@
+---
+// src/components/admin/AdminPedidos.astro
+---
+<section id="section-pedidos" class="hidden">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Gestión de Pedidos</h1>
+    <button id="btn-nuevo-pedido-manual" class="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+      + Nuevo Pedido Manual
+    </button>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+            <th class="p-4 font-semibold">Pedido / Fecha</th>
+            <th class="p-4 font-semibold">Cliente</th>
+            <th class="p-4 font-semibold">Items</th>
+            <th class="p-4 font-semibold">Estado / Seguimiento</th>
+            <th class="p-4 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="admin-pedidos-container" class="divide-y divide-gray-200">
+          <tr><td colspan="5" class="p-4 text-center text-gray-500 animate-pulse">Cargando pedidos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

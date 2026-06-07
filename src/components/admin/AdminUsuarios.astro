@@ -1,0 +1,21 @@
+---
+// src/components/admin/AdminUsuarios.astro
+---
+<section id="section-usuarios" class="hidden">
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Directorio de Clientes</h1>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+          <th class="p-4 font-semibold">Email</th>
+          <th class="p-4 font-semibold">Nombre / Empresa</th>
+          <th class="p-4 font-semibold">Instagram</th>
+          <th class="p-4 font-semibold text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="admin-usuarios-container" class="divide-y divide-gray-200">
+        <tr><td colspan="4" class="p-4 text-center text-gray-500 italic">No hay clientes registrados aún.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>

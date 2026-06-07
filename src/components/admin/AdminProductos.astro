@@ -1,0 +1,28 @@
+---
+// src/components/admin/AdminProductos.astro
+---
+<section id="section-productos" class="block">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Catálogo de Productos</h1>
+    <button id="btn-nuevo-producto" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+      + Nuevo Producto
+    </button>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-200">
+            <th class="p-4 font-semibold w-16">Foto</th>
+            <th class="p-4 font-semibold">Producto</th>
+            <th class="p-4 font-semibold">Variables</th>
+            <th class="p-4 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="admin-productos-container" class="divide-y divide-gray-200">
+          <tr><td colspan="4" class="p-4 text-center text-gray-500 animate-pulse">Cargando catálogo...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

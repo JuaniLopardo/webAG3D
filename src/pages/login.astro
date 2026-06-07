@@ -59,6 +59,7 @@
       const msg = document.getElementById('mensaje-error') as HTMLParagraphElement;
       const inputPassword = document.getElementById('login-password') as HTMLInputElement;
       import { setupPasswordToggle } from '../scripts/auth.js';
+      import { onLogin } from '../lib/cart.js';
 
       setupPasswordToggle();
 
@@ -86,12 +87,14 @@
         }
 
         if (data.user) {
-          // 2. Sincronizar email y login en el perfil
+          // 2. Sincronizar email en el perfil
           await supabase.from('perfiles').upsert({
             id: data.user.id,
             email: data.user.email,
-            last_login: new Date().toISOString()
           }, { onConflict: 'id' });
+
+          // 2b. Sincronizar carrito con el server
+          await onLogin();
 
           // 3. Consultar el rol para redirigir
           const { data: perfil, error: errorPerfil } = await supabase

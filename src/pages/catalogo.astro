@@ -6,11 +6,48 @@ const { data: productos } = await supabase.from('productos').select('*').order('
 ---
 
 <Layout title="Catálogo de Productos">
-    <section class="py-16 bg-gray-50 min-h-screen">
+    <section class="py-12 md:py-16 bg-gray-50 min-h-screen">
       <div class="container mx-auto px-4 w-full max-w-7xl">
-        <h1 class="text-3xl md:text-5xl font-bold text-center mb-12 text-gray-900 tracking-tight">Nuestro Catálogo Completo</h1>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+
+        <div class="mb-10 text-center">
+          <h1 class="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">Nuestro Catálogo</h1>
+          <p class="mt-3 text-gray-500 text-sm md:text-base">Explorá todos nuestros productos personalizados.</p>
+        </div>
+
+        <div id="admin-banner" class="hidden mb-6 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg flex items-start gap-3">
+          <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div>
+            <p class="text-amber-800 font-semibold text-sm">Estás navegando como administrador</p>
+            <p class="text-amber-700 text-xs mt-0.5">Las compras están deshabilitadas. Para gestionar el catálogo, andá al <a href="/admin" class="underline font-semibold">panel de administración</a>.</p>
+          </div>
+        </div>
+
+        <div class="sticky top-[72px] z-30 bg-gray-50/95 backdrop-blur py-4 mb-8 border-b border-gray-200">
+          <div class="flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
+            <div class="relative flex-1">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"></path>
+              </svg>
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Buscar productos..."
+                class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              />
+            </div>
+            <select
+              id="sort-select"
+              class="px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition cursor-pointer"
+            >
+              <option value="recientes">Más recientes</option>
+              <option value="az">Título A-Z</option>
+              <option value="za">Título Z-A</option>
+            </select>
+          </div>
+          <p id="results-count" class="text-center text-xs text-gray-500 mt-3"></p>
+        </div>
+
+        <div id="catalogo-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {productos?.map((producto) => {
             const getUrl = (f: any) => {
               if (!f) return null;
@@ -22,57 +59,109 @@ const { data: productos } = await supabase.from('productos').select('*').order('
             };
             const fotos = Array.isArray(producto.fotos) ? producto.fotos : (producto.fotos ? [producto.fotos] : []);
             const foto1 = getUrl(fotos[0]);
+            const foto2 = getUrl(fotos[1]);
             return (
-              <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100 group">
-                {foto1 ? (
-                  <div class="relative w-full h-56 overflow-hidden bg-gray-100">
-                    <img src={foto1} alt={producto.titulo} class="absolute inset-0 w-full h-full object-cover object-center" />
-                  </div>
-                ) : (
-                  <div class="w-full h-56 bg-gray-200 flex items-center justify-center p-6 text-center">
-                    <span class="text-gray-400 font-medium text-sm">Sin imagen</span>
-                  </div>
-                )}
-                <div class="p-6 flex flex-col flex-grow">
-                  <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">{producto.titulo}</h3>
-                  <p class="text-gray-600 text-sm mb-6 line-clamp-2 flex-grow">{producto.descripcion}</p>
-                  <a href={`/producto/${producto.id}`} class="mt-auto block w-full text-center px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors">Ver detalles</a>
+              <a
+                href={`/producto/${producto.id}`}
+                class="card-producto group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                data-titulo={producto.titulo.toLowerCase()}
+                data-descripcion={(producto.descripcion || '').toLowerCase()}
+              >
+                <div class="relative w-full aspect-square overflow-hidden bg-gray-100">
+                  {foto1 ? (
+                    <>
+                      <img src={foto1} alt={producto.titulo} class="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 group-hover:opacity-0" loading="lazy" />
+                      {foto2 && (
+                        <img src={foto2} alt={`${producto.titulo} alt`} class="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 opacity-0 group-hover:opacity-100" loading="lazy" />
+                      )}
+                    </>
+                  ) : (
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center p-6 text-center">
+                      <span class="text-gray-400 font-medium text-sm">Sin imagen</span>
+                    </div>
+                  )}
                 </div>
-              </div>
+                <div class="p-4">
+                  <h3 class="text-base font-bold text-gray-900 mb-1 leading-tight line-clamp-2 group-hover:text-primary transition-colors">{producto.titulo}</h3>
+                  <p class="text-gray-500 text-xs line-clamp-2">{producto.descripcion}</p>
+                </div>
+              </a>
             )
           })}
         </div>
+
+        <div id="empty-state" class="hidden text-center py-16">
+          <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"></path>
+          </svg>
+          <p class="text-gray-500 text-lg">No encontramos productos con tu búsqueda.</p>
+        </div>
       </div>
     </section>
-
-    <script>
-      import { supabase } from '../lib/supabase';
-      // Reutilizamos la lógica de Auth y menú mobile similar a index.astro
-      document.addEventListener('DOMContentLoaded', async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        const authBtn = document.getElementById('nav-auth-btn');
-        if (session && authBtn) {
-            authBtn.textContent = 'Mi Panel';
-            authBtn.classList.remove('invisible');
-            const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
-            // @ts-ignore
-            authBtn.href = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
-        } else {
-            authBtn?.classList.remove('invisible');
-        }
-
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-
-        menuToggle?.addEventListener('click', () => {
-          mobileMenu?.classList.toggle('hidden');
-          if (mobileMenu?.classList.contains('hidden')) {
-            menuIcon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-          } else {
-            menuIcon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-          }
-        });
-      });
-    </script>
 </Layout>
+
+<script>
+  import { isAdmin } from '../lib/auth.js';
+
+  // Si es admin, mostrar banner y deshabilitar cards
+  isAdmin().then((admin) => {
+    if (!admin) return;
+    document.getElementById('admin-banner')?.classList.remove('hidden');
+    document.querySelectorAll<HTMLAnchorElement>('a.card-producto').forEach((a) => {
+      a.removeAttribute('href');
+      a.style.pointerEvents = 'none';
+      a.style.opacity = '0.6';
+      a.style.cursor = 'not-allowed';
+      a.setAttribute('title', 'Las compras están deshabilitadas para administradores');
+    });
+  });
+
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+  const grid = document.getElementById('catalogo-grid') as HTMLDivElement;
+  const emptyState = document.getElementById('empty-state') as HTMLDivElement;
+  const resultsCount = document.getElementById('results-count') as HTMLParagraphElement;
+
+  const cards = Array.from(document.querySelectorAll<HTMLAnchorElement>('.card-producto'));
+
+  function aplicarFiltros() {
+    const query = searchInput.value.trim().toLowerCase();
+    let visible = 0;
+
+    cards.forEach(card => {
+      const titulo = card.dataset.titulo || '';
+      const descripcion = card.dataset.descripcion || '';
+      const match = !query || titulo.includes(query) || descripcion.includes(query);
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+
+    const orden = sortSelect.value;
+    const visibles = cards.filter(c => !c.classList.contains('hidden'));
+    visibles.sort((a, b) => {
+      const ta = a.dataset.titulo || '';
+      const tb = b.dataset.titulo || '';
+      if (orden === 'az') return ta.localeCompare(tb);
+      if (orden === 'za') return tb.localeCompare(ta);
+      return 0;
+    });
+    visibles.forEach(c => grid.appendChild(c));
+
+    if (visible === 0) {
+      emptyState.classList.remove('hidden');
+      grid.classList.add('hidden');
+    } else {
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+    }
+
+    const total = cards.length;
+    resultsCount.textContent = query
+      ? `Mostrando ${visible} de ${total} producto${total !== 1 ? 's' : ''}`
+      : `${total} producto${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`;
+  }
+
+  searchInput.addEventListener('input', aplicarFiltros);
+  sortSelect.addEventListener('change', aplicarFiltros);
+  aplicarFiltros();
+</script>

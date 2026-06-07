@@ -20,7 +20,13 @@
       <a href="/#clientes" class="hover:text-primary transition">Clientes</a>
       <a href="/#faq" class="hover:text-primary transition">FAQ</a>
       <a href="/#nosotros" class="hover:text-primary transition">Nosotros</a>
-      <a id="nav-auth-btn" href="/login" class="ml-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
+      <a id="cart-link-desktop" href="/dashboard?tab=carrito" class="relative hover:text-primary transition" aria-label="Carrito">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <span id="cart-badge" class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"></span>
+      </a>
+      <a id="nav-auth-btn" href="/login" class="ml-2 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition font-semibold invisible">Ingresar</a>
     </nav>
   </div>
 
@@ -34,13 +40,37 @@
       <a href="/catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Catálogo</a>
       <a href="/#clientes" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Clientes</a>
       <a href="/#faq" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">FAQ</a>
-      <a href="/#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition text-white">Nosotros</a>
+      <a href="/#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Nosotros</a>
+      <a id="cart-link-mobile" href="/dashboard?tab=carrito" class="mobile-link py-4 text-xl hover:text-primary transition text-white flex items-center justify-between">
+        <span>Carrito</span>
+        <span id="cart-badge-mobile" class="hidden bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] h-[24px] flex items-center justify-center px-2"></span>
+      </a>
     </nav>
   </div>
 </header>
 
 <script>
   import { supabase } from '../lib/supabase';
+  import { getCount } from '../lib/cart.js';
+
+  function actualizarBadge() {
+    const count = getCount();
+    const badge = document.getElementById('cart-badge');
+    const badgeMobile = document.getElementById('cart-badge-mobile');
+    [badge, badgeMobile].forEach(b => {
+      if (!b) return;
+      if (count > 0) {
+        b.textContent = String(count);
+        b.classList.remove('hidden');
+        b.classList.add('flex');
+      } else {
+        b.classList.add('hidden');
+        b.classList.remove('flex');
+      }
+    });
+  }
+  window.addEventListener('cart:updated', actualizarBadge);
+  document.addEventListener('DOMContentLoaded', actualizarBadge);
 
   document.addEventListener('DOMContentLoaded', async () => {
     const authBtn = document.getElementById('nav-auth-btn') as HTMLAnchorElement;
@@ -53,30 +83,42 @@
     if (session) {
       const metadata = session.user.user_metadata;
       
-      // Sincronización automática de perfil
-      await supabase.from('perfiles').upsert({ 
-        id: session.user.id, 
+      // Sincronización automática de perfil (solo columnas que existen)
+      await supabase.from('perfiles').upsert({
+        id: session.user.id,
         email: session.user.email,
         nombre_completo: metadata?.nombre_completo,
         telefono: metadata?.telefono,
         nombre_empresa: metadata?.nombre_empresa,
         instagram: metadata?.instagram,
-        last_login: new Date().toISOString()
       });
 
       if (authBtn) {
-        authBtn.textContent = 'Mi Panel';
-        authBtn.classList.remove('invisible');
-        authBtn.className = 'ml-4 bg-primary hover:bg-primary-hover text-white px-5 py-2 rounded-full transition font-bold shadow-lg';
-        
-        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+        const { data: perfil } = await supabase.from('perfiles').select('rol, nombre_completo').eq('id', session.user.id).single();
         const targetPath = perfil?.rol === 'admin' ? '/admin' : '/dashboard';
+        const nombre = perfil?.nombre_completo?.trim();
+        const inicial = nombre ? nombre.charAt(0).toUpperCase() : (session.user.email?.charAt(0).toUpperCase() || '?');
+        const isAdminUser = perfil?.rol === 'admin';
+
         authBtn.href = targetPath;
+        authBtn.classList.remove('invisible');
+        authBtn.className = 'ml-2 flex items-center gap-2 bg-primary hover:bg-primary-hover text-white pl-2 pr-4 py-2 rounded-full transition font-semibold shadow-lg';
+        authBtn.innerHTML = `
+          <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">${inicial}</span>
+          <span class="hidden xl:inline">Mi Cuenta</span>
+          <span class="xl:hidden">Mi Cuenta</span>
+        `;
+
+        // Si es admin, no mostramos el link al carrito (no puede comprar)
+        if (isAdminUser) {
+          document.getElementById('cart-link-desktop')?.classList.add('hidden');
+          document.getElementById('cart-link-mobile')?.classList.add('hidden');
+        }
 
         if (mobileAuthContainer && mobileLoginBtn) {
-          mobileLoginBtn.textContent = 'Mi Panel';
+          mobileLoginBtn.innerHTML = `<span class="inline-flex items-center gap-2 justify-center"><span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">${inicial}</span>Mi Cuenta</span>`;
           mobileLoginBtn.href = targetPath;
-          mobileLoginBtn.className = 'w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white';
+          mobileLoginBtn.className = 'w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white flex items-center justify-center';
           mobileRegisterBtn?.classList.add('hidden');
           mobileAuthContainer.classList.remove('invisible');
         }
