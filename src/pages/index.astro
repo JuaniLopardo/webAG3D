@@ -1,9 +1,24 @@
 ---
 import { supabase } from '../lib/supabase';
 import Layout from '../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
 
-// Traemos TODOS los productos de la tabla, ordenados por su ID
 const { data: productos, error } = await supabase.from('productos').select('*').order('id');
+
+const logosDir = path.resolve('public/logos');
+let filasLogos: string[][] = [];
+if (fs.existsSync(logosDir)) {
+  const logos = fs.readdirSync(logosDir)
+    .filter(f => f.endsWith('.png'))
+    .sort((a, b) => {
+      const na = parseInt(a.replace('.png', ''), 10);
+      const nb = parseInt(b.replace('.png', ''), 10);
+      return na - nb;
+    });
+  const size = Math.ceil(logos.length / 3);
+  filasLogos = [logos.slice(0, size), logos.slice(size, size * 2), logos.slice(size * 2)];
+}
 ---
 
 <Layout title="Accesorios e Indumentaria Personalizada">
@@ -22,16 +37,78 @@ const { data: productos, error } = await supabase.from('productos').select('*').
       </div>
     </section>
 
-    <section id="clientes" class="bg-gray-900 text-white py-20 text-center">
-      <div class="container mx-auto px-4">
+    <section id="clientes" class="bg-gray-900 text-white py-20 text-center overflow-hidden">
+      <div class="container mx-auto px-4 mb-10">
         <h2 class="text-3xl font-bold mb-6">Confían en nosotros</h2>
-        <p class="mb-10 text-gray-400">Empresas que ya tienen sus productos AG3D.</p>
-        <!-- TODO: Cargar logos en public/logos/ y mapearlos aquí -->
-        <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all">
-           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
-           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
-           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
-           <div class="h-12 w-32 bg-gray-700 rounded animate-pulse"></div>
+        <p class="text-gray-400">Empresas que ya tienen sus productos AG3D.</p>
+      </div>
+      <div class="space-y-10">
+        {filasLogos.map((fila, i) => (
+          <div class="logos-fila relative overflow-hidden w-full">
+            <div class="logos-track flex items-center gap-16 md:gap-20" style={`animation: scrollLogos-${i} 80s linear infinite;`}>
+              {fila.map(l => <img src={`/logos/${l}`} alt="Cliente" loading="lazy" class="logo-img" />)}
+              {fila.map(l => <img src={`/logos/${l}`} alt="Cliente" loading="lazy" class="logo-img" />)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <style>
+      .logos-fila::before,
+      .logos-fila::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .logos-fila::before {
+        left: 0;
+        background: linear-gradient(to right, rgb(17 24 39) 0%, transparent 100%);
+      }
+      .logos-fila::after {
+        right: 0;
+        background: linear-gradient(to left, rgb(17 24 39) 0%, transparent 100%);
+      }
+      .logos-track {
+        width: max-content;
+        will-change: transform;
+      }
+      @keyframes scrollLogos-0 {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      @keyframes scrollLogos-1 {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      @keyframes scrollLogos-2 {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .logo-img {
+        height: 4rem;
+        width: auto;
+        opacity: 0.5;
+        filter: grayscale(1);
+        transition: opacity 0.4s, filter 0.4s;
+      }
+      .logo-img:hover {
+        opacity: 1;
+        filter: grayscale(0);
+      }
+    </style>
+
+    <section id="nosotros" class="bg-white py-20">
+      <div class="container mx-auto px-4 max-w-5xl">
+        <h2 class="text-3xl font-bold text-center mb-10">Sobre nosotros</h2>
+        <div class="space-y-5 text-gray-700 text-lg leading-relaxed max-w-4xl mx-auto">
+          <p>Somos AG3D, un emprendimiento con más de 4 años en el mercado, dedicado a crear productos personalizados para empresas, emprendimientos y marcas.</p>
+          <p>Diseñamos y producimos merchandising con logo, como llaveros, indumentaria y accesorios, cuidando cada detalle para que tu marca se vea profesional.</p>
+          <p>Trabajamos con atención personalizada, boceto previo y envíos a todo el país.</p>
         </div>
       </div>
     </section>
@@ -41,13 +118,24 @@ const { data: productos, error } = await supabase.from('productos').select('*').
         <h2 class="text-3xl font-bold text-center mb-10">Preguntas Frecuentes</h2>
         
         <details class="bg-white mb-4 p-4 rounded-lg shadow cursor-pointer group">
-          <summary class="font-semibold text-lg outline-none">¿Cuál es el pedido mínimo?</summary>
-          <p class="mt-4 text-gray-600">El pedido mínimo para llaveros personalizados es de 50 unidades. Para indumentaria, consúltanos.</p>
+          <summary class="font-semibold text-lg outline-none">¿Cuál es la demora de entrega?</summary>
+          <p class="mt-4 text-gray-600">El plazo máximo de producción es de hasta 10 días hábiles, dependiendo del producto, la cantidad y la complejidad del diseño.</p>
         </details>
 
         <details class="bg-white mb-4 p-4 rounded-lg shadow cursor-pointer group">
-          <summary class="font-semibold text-lg outline-none">¿Qué formatos de logo aceptan?</summary>
-          <p class="mt-4 text-gray-600">Aceptamos formatos vectoriales (.ai, .svg, .eps) o imágenes de alta resolución (.png sin fondo).</p>
+          <summary class="font-semibold text-lg outline-none">¿Qué métodos de envío utilizan?</summary>
+          <div class="mt-4 text-gray-600 space-y-2">
+            <p>Realizamos envíos a todo el país por Andreani o Correo Argentino.</p>
+            <p>Podés elegir envío a sucursal o domicilio, según disponibilidad de la empresa de transporte.</p>
+          </div>
+        </details>
+
+        <details class="bg-white mb-4 p-4 rounded-lg shadow cursor-pointer group">
+          <summary class="font-semibold text-lg outline-none">¿Cómo debo enviar el logo?</summary>
+          <div class="mt-4 text-gray-600 space-y-2">
+            <p>Para trabajar el diseño de la mejor manera, recomendamos enviar el logo en alguno de estos formatos, en este orden de preferencia: .AI, PDF, PNG o JPEG.</p>
+            <p>Cuanto mejor sea la calidad del archivo, mejor será el resultado final del producto personalizado.</p>
+          </div>
         </details>
       </div>
     </section>
