@@ -77,35 +77,38 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
               <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Mis Datos</h2>
-                <p class="text-gray-500 text-sm mt-1">Los campos con <span class="text-red-500">*</span> son obligatorios.</p>
+                <p class="text-gray-500 text-sm mt-1">Tus datos registrados en AG3D.</p>
               </div>
 
-              <form id="form-perfil" class="space-y-5">
+              <div class="space-y-5">
 
-                <!-- Nombre: solo editable si está vacío -->
-                <div data-field="nombre">
-                  <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo <span class="text-red-500">*</span></label>
-                  <div data-view class="hidden"></div>
-                  <div data-edit>
-                    <input type="text" id="dash-nombre" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" placeholder="Tu nombre" />
-                    <p class="text-xs text-amber-600 mt-1">⚠ Una vez guardado, no podrá modificarse.</p>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo</label>
+                  <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-nombre">—</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                      Verificado
+                    </span>
                   </div>
                 </div>
 
-                <!-- Teléfono: solo editable si está vacío -->
-                <div data-field="telefono">
-                  <label class="block text-sm font-semibold text-gray-700 mb-1">Teléfono <span class="text-red-500">*</span></label>
-                  <div data-view class="hidden"></div>
-                  <div data-edit>
-                    <input type="tel" id="dash-tel" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" placeholder="+54 9 11 1234-5678" />
-                    <p class="text-xs text-amber-600 mt-1">⚠ Una vez guardado, no podrá modificarse.</p>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                  <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-telefono">—</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                      Verificado
+                    </span>
                   </div>
                 </div>
 
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                  <input type="email" id="dash-email" disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed" />
-                  <p class="text-xs text-gray-400 mt-1">El email no se puede modificar.</p>
+                  <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-email">—</span>
+                  </div>
                 </div>
 
                 <div class="pt-4 border-t border-gray-100">
@@ -113,21 +116,20 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-semibold text-gray-700 mb-1">Empresa</label>
-                      <input type="text" id="dash-empresa" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" placeholder="Opcional" />
+                      <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        <span class="text-gray-900 font-medium" id="view-empresa">—</span>
+                      </div>
                     </div>
                     <div>
                       <label class="block text-sm font-semibold text-gray-700 mb-1">Instagram</label>
-                      <input type="text" id="dash-instagram" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition bg-gray-50" placeholder="@usuario" />
+                      <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        <span class="text-gray-900 font-medium" id="view-instagram">—</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div id="mensaje-dash" class="text-center h-5 text-sm font-semibold"></div>
-
-                <button type="submit" id="btn-guardar-perfil" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98]">
-                  Guardar Cambios
-                </button>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -220,17 +222,7 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
     }
     window.addEventListener('cart:updated', actualizarBadgeDash);
 
-    // ==== Form ====
-    const form = document.getElementById('form-perfil') as HTMLFormElement;
-    const btn = document.getElementById('btn-guardar-perfil') as HTMLButtonElement;
-    const msg = document.getElementById('mensaje-dash') as HTMLParagraphElement;
     const btnLogout = document.getElementById('btn-logout-dash') as HTMLButtonElement;
-
-    const inputNombre = document.getElementById('dash-nombre') as HTMLInputElement;
-    const inputTel = document.getElementById('dash-tel') as HTMLInputElement;
-    const inputEmail = document.getElementById('dash-email') as HTMLInputElement;
-    const inputEmpresa = document.getElementById('dash-empresa') as HTMLInputElement;
-    const inputInstagram = document.getElementById('dash-instagram') as HTMLInputElement;
 
     const sidebarNombre = document.getElementById('sidebar-nombre') as HTMLParagraphElement;
     const sidebarEmail = document.getElementById('sidebar-email') as HTMLParagraphElement;
@@ -239,28 +231,6 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
     let userId: string | null = null;
     let currentTab = 'datos';
 
-    function setCampoModo(field: HTMLElement, valor: string, modo: 'view' | 'edit') {
-      const view = field.querySelector('[data-view]') as HTMLDivElement;
-      const edit = field.querySelector('[data-edit]') as HTMLDivElement;
-      if (modo === 'view') {
-        view.innerHTML = `
-          <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
-            <span class="text-gray-900 font-medium">${valor || '—'}</span>
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-              Verificado
-            </span>
-          </div>
-          <p class="text-xs text-gray-400 mt-1">Este dato no puede modificarse.</p>
-        `;
-        view.classList.remove('hidden');
-        edit.classList.add('hidden');
-      } else {
-        view.classList.add('hidden');
-        edit.classList.remove('hidden');
-      }
-    }
-
     async function cargarPerfil() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/login'; return; }
@@ -268,26 +238,22 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
 
       const { data: perfil } = await supabase.from('perfiles').select('*').eq('id', userId).single();
 
-      // Si es admin, no tiene "Mi Cuenta" de cliente: redirigir al panel
       if (perfil?.rol === 'admin') {
         window.location.href = '/admin';
         return;
       }
+
+      const nombre = perfil?.nombre_completo || '';
+      const tel = perfil?.telefono || '';
       const email = perfil?.email || session.user.email || '';
-      const nombre = (perfil?.nombre_completo || '').trim();
-      const tel = (perfil?.telefono || '').trim();
+      const empresa = perfil?.nombre_empresa || '';
+      const instagram = perfil?.instagram || '';
 
-      inputNombre.value = nombre;
-      inputTel.value = tel;
-      inputEmail.value = email;
-      inputEmpresa.value = perfil?.nombre_empresa || '';
-      inputInstagram.value = perfil?.instagram || '';
-
-      // Si ya tienen valor → modo view. Si están vacíos → modo edit.
-      const fieldNombre = document.querySelector('[data-field="nombre"]') as HTMLElement;
-      const fieldTel = document.querySelector('[data-field="telefono"]') as HTMLElement;
-      setCampoModo(fieldNombre, nombre, nombre ? 'view' : 'edit');
-      setCampoModo(fieldTel, tel, tel ? 'view' : 'edit');
+      document.getElementById('view-nombre')!.textContent = nombre;
+      document.getElementById('view-telefono')!.textContent = tel;
+      document.getElementById('view-email')!.textContent = email;
+      document.getElementById('view-empresa')!.textContent = empresa || '—';
+      document.getElementById('view-instagram')!.textContent = instagram || '—';
 
       sidebarEmail.textContent = email;
       if (nombre) {
@@ -298,52 +264,6 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
         avatarInicial.textContent = '?';
       }
     }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return;
-      const nombre = inputNombre.value.trim();
-      const tel = inputTel.value.trim();
-
-      // Validación de obligatorios
-      if (!nombre) {
-        msg.textContent = 'El nombre es obligatorio.';
-        msg.className = 'text-center h-5 text-sm font-semibold text-red-500';
-        inputNombre.focus();
-        return;
-      }
-      if (!tel) {
-        msg.textContent = 'El teléfono es obligatorio.';
-        msg.className = 'text-center h-5 text-sm font-semibold text-red-500';
-        inputTel.focus();
-        return;
-      }
-
-      btn.disabled = true; btn.textContent = 'Guardando...'; msg.textContent = '';
-
-      const { error } = await supabase.from('perfiles').update({
-        nombre_completo: nombre,
-        telefono: tel,
-        nombre_empresa: inputEmpresa.value.trim() || null,
-        instagram: inputInstagram.value.trim() || null,
-      }).eq('id', userId);
-
-      if (error) {
-        msg.textContent = 'Error al actualizar el perfil';
-        msg.className = 'text-center h-5 text-sm font-semibold text-red-500';
-      } else {
-        msg.textContent = '¡Datos guardados!';
-        msg.className = 'text-center h-5 text-sm font-semibold text-green-600';
-        sidebarNombre.textContent = nombre;
-        avatarInicial.textContent = nombre.charAt(0).toUpperCase();
-        // Pasar nombre y teléfono a modo "verificado" (no editables)
-        const fieldNombre = document.querySelector('[data-field="nombre"]') as HTMLElement;
-        const fieldTel = document.querySelector('[data-field="telefono"]') as HTMLElement;
-        setCampoModo(fieldNombre, nombre, 'view');
-        setCampoModo(fieldTel, tel, 'view');
-      }
-      btn.disabled = false; btn.textContent = 'Guardar Cambios';
-    });
 
     btnLogout.addEventListener('click', async () => {
       await supabase.auth.signOut();
