@@ -231,13 +231,13 @@ export function initPedidos() {
       });
 
       if (error) {
-        alert('Error al crear pedido: ' + error.message);
+        alert('Error al crear cotización: ' + error.message);
       } else {
         modalPedidoManual?.classList.replace('flex', 'hidden');
         cargarPedidos();
       }
       btnSave.disabled = false;
-      btnSave.textContent = 'Crear Pedido';
+      btnSave.textContent = 'Crear Cotización';
     });
   }
 }

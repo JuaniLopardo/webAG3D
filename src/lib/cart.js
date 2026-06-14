@@ -221,32 +221,24 @@ export async function onLogin() {
 }
 
 /**
- * Crea un pedido en Supabase a partir del carrito actual,
- * respetando el esquema existente de la tabla `pedidos`.
- * Devuelve el pedido creado.
+ * Crea un pedido (cotización) en Supabase a partir del carrito actual.
+ * Devuelve la cotización creada.
  */
 export async function crearPedidoDesdeCarrito() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('Necesitás iniciar sesión para confirmar el pedido.');
+  if (!session) throw new Error('Necesitás iniciar sesión para solicitar una cotización.');
 
   const items = getLocal();
   if (items.length === 0) throw new Error('Tu carrito está vacío.');
 
-  // La tabla `pedidos` tiene FK cliente_id -> perfiles(id).
-  // Si el user se logueó sin haber pasado por el registro completo,
-  // puede no existir la fila en perfiles. La creamos/actualizamos acá.
-  // Solo insertamos columnas que sabemos que existen (id, email).
-  // NOTA: Asegurarse de que RLS no permita modificar la columna 'rol' desde el cliente.
   const { error: perfilError } = await supabase.from('perfiles').upsert({
     id: session.user.id,
     email: session.user.email,
   }, { onConflict: 'id' });
   if (perfilError) {
-    throw new Error('No se pudo preparar tu perfil para el pedido: ' + perfilError.message);
+    throw new Error('No se pudo preparar tu perfil para la cotización: ' + perfilError.message);
   }
 
-  // Agrupamos por producto para que la tabla `pedidos` (que tiene `items` jsonb)
-  // pueda tener varios items por pedido
   const pedidoItems = items.map(it => ({
     producto_id: it.producto_id,
     titulo: it.titulo,
@@ -272,23 +264,26 @@ export async function crearPedidoDesdeCarrito() {
 }
 
 /**
- * Genera el mensaje de WhatsApp a partir del carrito actual.
- * Devuelve la URL completa lista para abrir en una nueva pestaña.
+ * Construye el texto del mensaje de WhatsApp para la cotización.
+ * No depende de localStorage, recibe los items directamente.
  */
-export function buildWhatsappUrl(whatsappNumber) {
-  const items = getLocal();
-  if (items.length === 0) return null;
-
+export function construirMensajeCotizacion(items, email) {
   const lineas = items.map((it, i) => {
     const varsTxt = Object.keys(it.variables || {}).length
-      ? ` (${Object.entries(it.variables).map(([k, v]) => `${k}: ${v}`).join(', ')})`
+      ? Object.entries(it.variables).map(([k, v]) => `   ${k}: ${v}`).join('\n')
       : '';
-    return `${i + 1}. ${it.titulo}${varsTxt} x${it.cantidad}`;
+    return `${i + 1}. ${it.titulo}\n${varsTxt}   x${it.cantidad} unidades`;
   });
 
   const total = items.reduce((acc, it) => acc + Number(it.cantidad || 0), 0);
-  const mensaje = `¡Hola AG3D! Quiero confirmar el siguiente pedido:\n\n${lineas.join('\n')}\n\nTotal de unidades: ${total}`;
 
+  return `¡Hola AG3D! Quiero solicitar una cotización:\n\n━━━ Cotización ━━━\n${lineas.join('\n\n')}\n━━━━━━━━━━━━━━━━\nTotal unidades: ${total}\n━━━━━━━━━━━━━━━━\n\nDatos del cliente:\nEmail: ${email}\n\nQuedo atento a la cotización.`;
+}
+
+/**
+ * Genera la URL de WhatsApp a partir de un mensaje ya construido.
+ */
+export function buildWhatsappUrlFromMessage(mensaje, whatsappNumber) {
   const num = String(whatsappNumber || '').replace(/\D/g, '');
   return `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}`;
 }

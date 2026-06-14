@@ -3,7 +3,7 @@
 ---
 <div id="modal-nuevo-pedido" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col items-center justify-center z-50 px-4">
   <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-    <h3 class="text-xl font-bold text-gray-900 mb-6">Cargar Pedido Manual</h3>
+    <h3 class="text-xl font-bold text-gray-900 mb-6">Cargar Cotización Manual</h3>
     
     <form id="form-nuevo-pedido" class="space-y-6">
       <div>
@@ -11,12 +11,12 @@
         <select id="new-order-cliente" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none transition bg-gray-50">
           <option value="">Cargando clientes...</option>
         </select>
-        <p class="text-[10px] text-gray-500 mt-1">El cliente debe estar registrado previamente para asociar el pedido.</p>
+        <p class="text-[10px] text-gray-500 mt-1">El cliente debe estar registrado previamente para asociar la cotización.</p>
       </div>
 
       <div class="border-t border-gray-100 pt-4">
         <div class="flex justify-between items-center mb-4">
-          <label class="block text-sm font-bold text-gray-700">Productos del Pedido</label>
+          <label class="block text-sm font-bold text-gray-700">Productos de la Cotización</label>
           <button type="button" id="btn-add-item-manual" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md font-bold transition">+ Agregar Producto</button>
         </div>
         <div id="items-manual-container" class="space-y-4"></div>
@@ -24,7 +24,7 @@
 
       <div class="mt-8 flex justify-end gap-3 border-t border-gray-200 pt-4">
         <button type="button" id="btn-close-order-modal" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
-        <button type="submit" id="btn-save-manual-order" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition">Crear Pedido</button>
+        <button type="submit" id="btn-save-manual-order" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition">Crear Cotización</button>
       </div>
     </form>
   </div>

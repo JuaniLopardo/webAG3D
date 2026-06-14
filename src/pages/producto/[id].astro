@@ -87,7 +87,7 @@ const nombresVariables = Object.keys(variablesSeguras);
 
           <div class="bg-primary-light border-l-4 border-primary p-4 mb-8">
             <p class="text-primary font-semibold">
-              Pedido mínimo: <span id="minimo-num" class="text-secondary font-bold">{cantidadMinima} unidades</span>
+              Mínimo: <span id="minimo-num" class="text-secondary font-bold">{cantidadMinima} unidades</span>
             </p>
             <p class="text-xs text-gray-500 mt-1">Podés combinar diferentes variables para llegar al mínimo.</p>
           </div>
@@ -328,7 +328,7 @@ const nombresVariables = Object.keys(variablesSeguras);
         addBtn.textContent = 'Agregar al carrito';
 
         if (totalEnCarrito === 0) {
-          cartStatus.innerHTML = `<span class="text-gray-500">Podés ir sumando unidades y variables. El pedido se confirma al llegar al mínimo de <b>${cantidadMinima}</b>.</span>`;
+          cartStatus.innerHTML = `<span class="text-gray-500">Podés ir sumando unidades y variables. Podés solicitar cotización al llegar al mínimo de <b>${cantidadMinima}</b>.</span>`;
         } else if (totalEnCarrito < cantidadMinima) {
           const faltan = cantidadMinima - totalEnCarrito;
           cartStatus.innerHTML = `<span class="text-amber-600">Llevás <b>${totalEnCarrito}</b> en carrito. Faltan <b>${faltan}</b> para el mínimo (podés sumar más variables).</span>`;
