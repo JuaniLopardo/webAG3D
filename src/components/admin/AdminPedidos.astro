@@ -8,6 +8,35 @@
       + Nueva Cotización Manual
     </button>
   </div>
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex flex-wrap items-end gap-4">
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1">Desde</label>
+      <input type="date" id="filter-fecha-desde" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1">Hasta</label>
+      <input type="date" id="filter-fecha-hasta" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
+    </div>
+    <div>
+      <button id="btn-filtrar-pedidos" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-hover transition shadow-sm">
+        Filtrar
+      </button>
+    </div>
+    <div>
+      <button id="btn-descargar-csv" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition shadow-sm">
+        Descargar CSV
+      </button>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2 mb-2 text-xs text-gray-500">
+    <span id="info-pag-pedidos">Página 1 de 1</span>
+    <button id="btn-pedidos-prev" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-30 transition font-bold">‹</button>
+    <button id="btn-pedidos-next" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-30 transition font-bold">›</button>
+  </div>
+
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">

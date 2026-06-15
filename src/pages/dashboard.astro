@@ -314,6 +314,7 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
       }
 
       const estadoColors: Record<string, string> = {
+        'no confirmado': 'bg-gray-200 text-gray-700',
         pendiente: 'bg-amber-100 text-amber-700',
         'en diseno': 'bg-purple-100 text-purple-700',
         'en produccion': 'bg-blue-100 text-blue-700',
@@ -327,9 +328,10 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
         const items: any[] = Array.isArray(p.items) ? p.items : [];
         const fecha = p.fecha_pedido ? new Date(p.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
         const totalUnidades = items.reduce((acc, it) => acc + Number(it.cantidad || 0), 0);
-        const estado = String(p.estado || 'pendiente').toLowerCase();
+        const estado = String(p.estado || 'no confirmado').toLowerCase();
         const color = estadoColors[estado] || 'bg-gray-100 text-gray-700';
         const tracking = p.tracking ? `<span class="text-xs text-gray-500">Tracking: <b>${p.tracking}</b></span>` : '';
+        const esNoConfirmado = estado === 'no confirmado';
 
         const itemsHtml = items.map((it: any) => {
           const vars = Object.keys(it.variables || {}).length
@@ -347,6 +349,10 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
           </div>`;
         }).join('');
 
+        const whatsappBtn = esNoConfirmado
+          ? `<button class="btn-reenviar-whatsapp mt-3 w-full bg-primary text-white text-sm font-bold py-2 rounded-lg hover:bg-primary-hover transition" data-id="${p.id}">Enviar a WhatsApp</button>`
+          : '';
+
         return `
           <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
             <summary class="cursor-pointer p-4 flex items-center justify-between hover:bg-gray-50 transition">
@@ -359,6 +365,7 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
             <div class="px-4 pb-4 border-t border-gray-100">
               ${itemsHtml}
               ${tracking ? `<div class="pt-3 border-t border-gray-100 mt-2">${tracking}</div>` : ''}
+              ${whatsappBtn}
             </div>
           </details>
         `;
@@ -553,7 +560,45 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
         modalCot.classList.remove('flex');
       }
 
-      btnCancelarCot?.addEventListener('click', ocultarModalCotizacion);
+      async function reenviarWhatsApp(orderId: number) {
+        const { data: order } = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+
+        if (!order || !Array.isArray(order.items)) return;
+
+        const email = (document.getElementById('view-email') as HTMLSpanElement)?.textContent || '';
+        const mensaje = construirMensajeCotizacion(order.items, email);
+        const waUrl = buildWhatsappUrlFromMessage(mensaje, (window as any).__WHATSAPP_NUMBER__);
+        if (waUrl) window.open(waUrl, '_blank');
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.btn-reenviar-whatsapp') as HTMLElement;
+        if (btn) {
+          const id = Number(btn.dataset.id);
+          if (id) reenviarWhatsApp(id);
+        }
+      });
+
+      function mostrarToastExito() {
+        const existing = document.getElementById('toast-exito');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.id = 'toast-exito';
+        toast.className = 'fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-bold z-50 animate-slide-up';
+        toast.innerHTML = '✅ Cotización creada. Enviala por WhatsApp desde "Mis Cotizaciones".';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 6000);
+      }
+
+      btnCancelarCot?.addEventListener('click', () => {
+        ocultarModalCotizacion();
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = 'Solicitar cotización';
+      });
 
       btnEnviarCot?.addEventListener('click', async () => {
         btnEnviarCot.disabled = true;
@@ -565,6 +610,7 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
           await crearPedidoDesdeCarrito();
           const waUrl = buildWhatsappUrlFromMessage(mensajeCotizacionPendiente, (window as any).__WHATSAPP_NUMBER__);
           if (waUrl) window.open(waUrl, '_blank');
+          mostrarToastExito();
           activarTab('pedidos');
         } catch (e: any) {
           alert('Error al crear cotización: ' + (e.message || e));
@@ -583,4 +629,11 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
       }
     });
   </script>
+  <style>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(1rem); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.3s ease-out; }
+  </style>
 </Layout>

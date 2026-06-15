@@ -251,7 +251,7 @@ export async function crearPedidoDesdeCarrito() {
     .from('pedidos')
     .insert({
       cliente_id: session.user.id,
-      estado: 'pendiente',
+      estado: 'no confirmado',
       items: pedidoItems,
       fecha_pedido: new Date().toISOString(),
     })

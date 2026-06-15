@@ -13,21 +13,45 @@ const itemsManualContainer = document.getElementById('items-manual-container');
 const btnAddItemManual = document.getElementById('btn-add-item-manual');
 const selectClienteManual = document.getElementById('new-order-cliente');
 
+const inputFechaDesde = document.getElementById('filter-fecha-desde');
+const inputFechaHasta = document.getElementById('filter-fecha-hasta');
+const btnFiltrar = document.getElementById('btn-filtrar-pedidos');
+const btnDescargarCSV = document.getElementById('btn-descargar-csv');
+
+let ultimoQuery = null; // guarda el último query para reusarlo en CSV
+
+function construirQuery() {
+  let query = supabase
+    .from('pedidos')
+    .select('*, perfiles(email, nombre_completo)', { count: 'exact' });
+
+  const desde = inputFechaDesde?.value;
+  const hasta = inputFechaHasta?.value;
+
+  if (desde) {
+    query = query.gte('fecha_pedido', `${desde}T00:00:00Z`);
+  }
+  if (hasta) {
+    query = query.lte('fecha_pedido', `${hasta}T23:59:59Z`);
+  }
+
+  query = query.order('fecha_pedido', { ascending: false });
+  ultimoQuery = { desde, hasta };
+  return query;
+}
+
 export async function cargarPedidos() {
   if (!pedidosMainContainer) return;
 
   const from = adminState.paginaPedidos * adminState.pageSize;
   const to = from + adminState.pageSize - 1;
 
-  const { data: orders, error, count } = await supabase
-    .from('pedidos')
-    .select('*, perfiles(email, nombre_completo)', { count: 'exact' })
-    .order('fecha_pedido', { ascending: false })
-    .range(from, to);
+  const query = construirQuery();
+  const { data: orders, error, count } = await query.range(from, to);
 
   if (error || !orders) return;
 
-  const statuses = ['Recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado'];
+  const statuses = ['no confirmado', 'Recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado'];
 
   pedidosMainContainer.innerHTML = orders.map(order => {
     const fecha = new Date(order.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -240,4 +264,44 @@ export function initPedidos() {
       btnSave.textContent = 'Crear Cotización';
     });
   }
+
+  // Filtro por fechas
+  btnFiltrar?.addEventListener('click', () => {
+    adminState.paginaPedidos = 0;
+    cargarPedidos();
+  });
+
+  // Descargar CSV
+  btnDescargarCSV?.addEventListener('click', async () => {
+    const query = construirQuery();
+    const { data: orders, error } = await query;
+
+    if (error || !orders || orders.length === 0) {
+      alert('No hay cotizaciones para descargar.');
+      return;
+    }
+
+    const cabeceras = ['ID Cotización', 'Fecha', 'Cliente Email', 'Cliente Nombre', 'Estado', 'Productos', 'Total Unidades', 'Tracking'];
+
+    const filas = orders.map(o => {
+      const fecha = o.fecha_pedido ? new Date(o.fecha_pedido).toLocaleDateString('es-AR') : '';
+      const cliente = o.perfiles || {};
+      const items = Array.isArray(o.items) ? o.items : [];
+      const productos = items.map(it => `${it.titulo} x${it.cantidad}${it.variables ? ' (' + Object.entries(it.variables).map(([k, v]) => `${k}:${v}`).join(', ') + ')' : ''}`).join('; ');
+      const totalUnidades = items.reduce((acc, it) => acc + Number(it.cantidad || 0), 0);
+      return [o.id, fecha, cliente.email || '', cliente.nombre_completo || '', o.estado || '', productos, totalUnidades, o.tracking || ''];
+    });
+
+    const csvContent = [cabeceras, ...filas]
+      .map(fila => fila.map(celda => `"${String(celda).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cotizaciones_${ultimoQuery?.desde || 'todas'}_${ultimoQuery?.hasta || 'todas'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }
