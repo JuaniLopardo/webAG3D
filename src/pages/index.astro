@@ -55,24 +55,6 @@ if (fs.existsSync(logosDir)) {
     </section>
 
     <style>
-      .logos-fila::before,
-      .logos-fila::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 80px;
-        z-index: 2;
-        pointer-events: none;
-      }
-      .logos-fila::before {
-        left: 0;
-        background: linear-gradient(to right, rgb(5 74 145) 0%, transparent 100%);
-      }
-      .logos-fila::after {
-        right: 0;
-        background: linear-gradient(to left, rgb(5 74 145) 0%, transparent 100%);
-      }
       .logos-track {
         width: max-content;
         will-change: transform;
