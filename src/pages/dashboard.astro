@@ -439,7 +439,7 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
         if (total >= min) {
           resumenPartes.push(`<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span><span class="text-green-700"><b>${titulo}</b>: ${total}/${min} ✓</span></div>`);
         } else {
-          resumenPartes.push(`<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-amber-700"><b>${titulo}</b>: ${total}/${min} — faltan ${min - total}</span></div>`);
+          resumenPartes.push(`<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span><span class="text-accent"><b>${titulo}</b>: ${total}/${min} — faltan ${min - total}</span></div>`);
         }
       }
       resumenMinimos.innerHTML = resumenPartes.join('');

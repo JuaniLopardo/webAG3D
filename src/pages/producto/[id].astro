@@ -331,7 +331,7 @@ const nombresVariables = Object.keys(variablesSeguras);
           cartStatus.innerHTML = `<span class="text-gray-500">Podés ir sumando unidades y variables. Podés solicitar cotización al llegar al mínimo de <b>${cantidadMinima}</b>.</span>`;
         } else if (totalEnCarrito < cantidadMinima) {
           const faltan = cantidadMinima - totalEnCarrito;
-          cartStatus.innerHTML = `<span class="text-amber-600">Llevás <b>${totalEnCarrito}</b> en carrito. Faltan <b>${faltan}</b> para el mínimo (podés sumar más variables).</span>`;
+          cartStatus.innerHTML = `<span class="text-accent">Llevás <b>${totalEnCarrito}</b> en carrito. Faltan <b>${faltan}</b> para el mínimo (podés sumar más variables).</span>`;
         } else {
           cartStatus.innerHTML = `<span class="text-green-600 font-semibold">✓ Mínimo cubierto. Llevás ${totalEnCarrito} en carrito.</span>`;
         }

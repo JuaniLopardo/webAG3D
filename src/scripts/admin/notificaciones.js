@@ -49,7 +49,7 @@ function actualizarBadge(conteo) {
     if (!tab) return;
     badge = document.createElement('span');
     badge.id = 'badge-nuevas-cotizaciones';
-    badge.className = 'ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full';
+    badge.className = 'ml-auto bg-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full';
     tab.appendChild(badge);
   }
   badge.textContent = conteo;

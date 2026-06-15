@@ -5,7 +5,7 @@
 /* Estilos globales base */
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-800 font-sans;
+    @apply bg-[#f0f4f8] text-gray-800 font-sans;
   }
   h1, h2, h3 {
     @apply text-gray-900 tracking-tight;

@@ -1,7 +1,7 @@
 ---
 // src/components/Header.astro
 ---
-<header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
+<header class="bg-header text-black sticky top-0 z-50 shadow-md">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <a href="/" class="transition-transform hover:scale-105 active:scale-95">
       <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
@@ -31,17 +31,17 @@
   </div>
 
   <!-- Menú Mobile Desplegable -->
-  <div id="mobile-menu" class="hidden lg:hidden bg-secondary border-t border-gray-800 transition-all duration-300">
+  <div id="mobile-menu" class="hidden lg:hidden bg-header border-t border-gray-300 transition-all duration-300">
     <nav class="flex flex-col p-4 space-y-4">
-      <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-800 invisible">
+      <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-300 invisible">
         <a id="mobile-login-btn" href="/login" class="w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white">Iniciar Sesión</a>
-        <a id="mobile-register-btn" href="/registro" class="w-full text-center py-4 border border-gray-700 rounded-lg font-bold text-xl text-white">Registrarse</a>
+        <a id="mobile-register-btn" href="/registro" class="w-full text-center py-4 border border-gray-400 rounded-lg font-bold text-xl text-black">Registrarse</a>
       </div>
-      <a href="/catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Catálogo</a>
-      <a href="/#clientes" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Clientes</a>
-      <a href="/#faq" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">FAQ</a>
-      <a href="/#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-800/50 text-white">Nosotros</a>
-      <a id="cart-link-mobile" href="/dashboard?tab=carrito" class="mobile-link py-4 text-xl hover:text-primary transition text-white flex items-center justify-between">
+      <a href="/catalogo" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-300 text-black">Catálogo</a>
+      <a href="/#clientes" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-300 text-black">Clientes</a>
+      <a href="/#faq" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-300 text-black">FAQ</a>
+      <a href="/#nosotros" class="mobile-link py-4 text-xl hover:text-primary transition border-b border-gray-300 text-black">Nosotros</a>
+      <a id="cart-link-mobile" href="/dashboard?tab=carrito" class="mobile-link py-4 text-xl hover:text-primary transition text-black flex items-center justify-between">
         <span>Carrito</span>
         <span id="cart-badge-mobile" class="hidden bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] h-[24px] flex items-center justify-center px-2"></span>
       </a>

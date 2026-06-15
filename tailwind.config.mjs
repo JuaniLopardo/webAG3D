@@ -5,12 +5,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#61AAE1', // Nuevo Azul AG3D
-          hover: '#4d92c7',   // Variante más oscura para el hover
-          light: '#eef7fe',   // Variante clara
+          DEFAULT: '#61AAE1',
+          hover: '#4d92c7',
+          light: '#eef7fe',
         },
-        secondary: '#111827', // Gris oscuro/Negro
-        accent: '#22c55e',    // Verde WhatsApp/Éxito
+        secondary: '#054A91',
+        accent: '#FF8B1F',
+        success: '#22c55e',
+        header: '#DBE4EE',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
