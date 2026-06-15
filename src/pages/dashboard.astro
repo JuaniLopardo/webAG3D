@@ -116,16 +116,15 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-semibold text-gray-700 mb-1">Empresa</label>
-                      <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
-                        <span class="text-gray-900 font-medium" id="view-empresa">—</span>
-                      </div>
+                      <input type="text" id="edit-empresa" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="AG3D S.A." />
                     </div>
                     <div>
                       <label class="block text-sm font-semibold text-gray-700 mb-1">Instagram</label>
-                      <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
-                        <span class="text-gray-900 font-medium" id="view-instagram">—</span>
-                      </div>
+                      <input type="text" id="edit-instagram" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="@usuario" />
                     </div>
+                  </div>
+                  <div class="mt-4 flex justify-end">
+                    <button id="btn-guardar-opcionales" class="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition shadow-sm">Guardar cambios</button>
                   </div>
                 </div>
 
@@ -265,8 +264,8 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
       document.getElementById('view-nombre')!.textContent = nombre;
       document.getElementById('view-telefono')!.textContent = tel;
       document.getElementById('view-email')!.textContent = email;
-      document.getElementById('view-empresa')!.textContent = empresa || '—';
-      document.getElementById('view-instagram')!.textContent = instagram || '—';
+      (document.getElementById('edit-empresa') as HTMLInputElement).value = empresa || '';
+      (document.getElementById('edit-instagram') as HTMLInputElement).value = instagram || '';
 
       sidebarEmail.textContent = email;
       if (nombre) {
@@ -281,6 +280,29 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
     btnLogout.addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = '/login';
+    });
+
+    // ==== Guardar datos opcionales ====
+    const btnGuardarOpcionales = document.getElementById('btn-guardar-opcionales') as HTMLButtonElement;
+    btnGuardarOpcionales?.addEventListener('click', async () => {
+      if (!userId) return;
+      const empresa = (document.getElementById('edit-empresa') as HTMLInputElement).value.trim();
+      const instagram = (document.getElementById('edit-instagram') as HTMLInputElement).value.trim();
+      btnGuardarOpcionales.disabled = true;
+      btnGuardarOpcionales.textContent = 'Guardando...';
+      const { error } = await supabase
+        .from('perfiles')
+        .update({ nombre_empresa: empresa || null, instagram: instagram || null })
+        .eq('id', userId);
+      btnGuardarOpcionales.disabled = false;
+      btnGuardarOpcionales.textContent = 'Guardar cambios';
+      if (error) {
+        alert('Error al guardar: ' + error.message);
+      } else {
+        const original = btnGuardarOpcionales.textContent;
+        btnGuardarOpcionales.textContent = '✓ Guardado';
+        setTimeout(() => { btnGuardarOpcionales.textContent = original; }, 2000);
+      }
     });
 
     // ==== Pedidos ====
