@@ -1,10 +1,10 @@
 ---
 // src/components/Header.astro
 ---
-<header class="bg-header text-black sticky top-0 z-50 shadow-md">
+<header class="bg-[#DBE4EE] text-black sticky top-0 z-50 shadow-md border-b border-gray-300/50">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <a href="/" class="transition-transform hover:scale-105 active:scale-95">
-      <img src="/logo.png" alt="AG3D Logo" class="h-10 w-auto object-contain" />
+      <img src="/logo.png" alt="AG3D Logo" class="h-14 w-auto object-contain" />
     </a>
 
     <!-- Botón Hamburguesa -->
@@ -31,7 +31,7 @@
   </div>
 
   <!-- Menú Mobile Desplegable -->
-  <div id="mobile-menu" class="hidden lg:hidden bg-header border-t border-gray-300 transition-all duration-300">
+  <div id="mobile-menu" class="hidden lg:hidden bg-[#DBE4EE] border-t border-gray-300 transition-all duration-300">
     <nav class="flex flex-col p-4 space-y-4">
       <div id="mobile-auth-container" class="flex flex-col gap-2 pb-4 border-b border-gray-300 invisible">
         <a id="mobile-login-btn" href="/login" class="w-full text-center py-4 bg-primary rounded-lg font-bold text-xl text-white">Iniciar Sesión</a>
