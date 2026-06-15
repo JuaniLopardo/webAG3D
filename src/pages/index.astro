@@ -19,6 +19,14 @@ if (fs.existsSync(logosDir)) {
   const size = Math.ceil(logos.length / 3);
   filasLogos = [logos.slice(0, size), logos.slice(size, size * 2), logos.slice(size * 2)];
 }
+
+const heroDir = path.resolve('public/assets/hero');
+let heroImages: string[] = [];
+if (fs.existsSync(heroDir)) {
+  heroImages = fs.readdirSync(heroDir)
+    .filter((f: string) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+    .sort();
+}
 ---
 
 <Layout title="Accesorios e Indumentaria Personalizada">
@@ -29,10 +37,28 @@ if (fs.existsSync(logosDir)) {
         <a href="/catalogo" class="inline-block bg-primary hover:bg-primary-hover text-white text-xl font-bold px-10 py-5 rounded-full transition shadow-xl hover:scale-105 active:scale-95 mb-12">
           Explorar Catálogo
         </a>
-        <!-- TODO: Reemplazar por componente de carrusel real -->
-        <div class="relative w-full max-w-4xl mx-auto h-64 md:h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
-          <img src="/assets/hero-placeholder.jpg" class="w-full h-full object-cover opacity-50" alt="Muestra de impresión 3D" />
-          <div class="absolute inset-0 flex items-center justify-center text-gray-400 italic">Carrusel de fotos de trabajos realizados</div>
+        <!-- Hero: carrusel flexible -->
+        <div id="hero" class="relative w-full max-w-4xl mx-auto h-64 md:h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
+          {heroImages.length === 0 ? (
+            <img src="/assets/hero-placeholder.jpg" class="w-full h-full object-cover opacity-50" alt="Muestra de impresión 3D" />
+          ) : heroImages.length === 1 ? (
+            <img src={`/assets/hero/${heroImages[0]}`} class="w-full h-full object-cover" alt="Trabajo AG3D" />
+          ) : (
+            <>
+              <div id="hero-track" class="flex h-full transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
+                {heroImages.map((img, i) => (
+                  <div key={i} class="w-full h-full flex-shrink-0">
+                    <img src={`/assets/hero/${img}`} alt={`Trabajo AG3D ${i + 1}`} class="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+              <div id="hero-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {heroImages.map((_, i) => (
+                  <button key={i} class="hero-dot w-2.5 h-2.5 rounded-full bg-white/60 hover:bg-white/90 transition-colors" data-index={i} aria-label={`Foto ${i + 1}`}></button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>
@@ -122,3 +148,39 @@ if (fs.existsSync(logosDir)) {
       </div>
     </section>
 </Layout>
+
+<script>
+  (function() {
+    const track = document.getElementById('hero-track');
+    const dots = document.querySelectorAll('.hero-dot');
+    if (!track || dots.length === 0) return;
+
+    let current = 0;
+    let interval = setInterval(next, 5000);
+    let timeoutId = null;
+
+    function goTo(index) {
+      current = index;
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dots.forEach((d, i) => {
+        d.classList.toggle('bg-white/90', i === current);
+        d.classList.toggle('bg-white/60', i !== current);
+      });
+      resetAuto();
+    }
+
+    function next() { goTo((current + 1) % dots.length); }
+
+    function resetAuto() {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => { interval = setInterval(next, 5000); }, 8000);
+    }
+
+    dots.forEach(d => d.addEventListener('click', () => goTo(Number(d.dataset.index))));
+
+    const hero = document.getElementById('hero');
+    hero.addEventListener('mouseenter', () => clearInterval(interval));
+    hero.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
+  })();
+</script>
