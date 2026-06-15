@@ -15,6 +15,13 @@ import ModalVisorImagen from '../components/admin/ModalVisorImagen.astro';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Panel de Administración - AG3D</title>
+    <style>
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(1rem); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up { animation: slideUp 0.3s ease-out; }
+    </style>
   </head>
   <body class="bg-gray-100 text-gray-800 font-sans flex h-screen overflow-hidden relative">
     
@@ -37,6 +44,7 @@ import ModalVisorImagen from '../components/admin/ModalVisorImagen.astro';
       import { initProductos, cargarProductos } from '../scripts/admin/productos.js';
       import { initPedidos } from '../scripts/admin/pedidos.js';
       import { initUsuarios } from '../scripts/admin/usuarios.js';
+      import { initNotificaciones } from '../scripts/admin/notificaciones.js';
 
       document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -50,6 +58,7 @@ import ModalVisorImagen from '../components/admin/ModalVisorImagen.astro';
         initProductos();
         initPedidos();
         initUsuarios();
+        initNotificaciones();
 
         // Carga inicial
         cargarProductos();
