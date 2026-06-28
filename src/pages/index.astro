@@ -28,12 +28,33 @@ if (fs.existsSync(heroDir)) {
     .filter((f: string) => /\.(jpg|jpeg|png|webp)$/i.test(f))
     .sort();
   const names = new Set(files);
-  heroImages = files
-    .filter((f: string) => !f.endsWith('.webp'))
-    .map((f: string) => {
+  const handled = new Set<string>();
+  heroImages = [];
+  for (const f of files) {
+    if (handled.has(f)) continue;
+    if (f.endsWith('.webp')) {
+      const base = f.replace(/\.\w+$/, '');
+      const orig = files.find((o: string) => !o.endsWith('.webp') && o.replace(/\.\w+$/, '') === base);
+      if (orig) {
+        heroImages.push({ file: orig, webp: f });
+        handled.add(orig);
+        handled.add(f);
+      } else {
+        heroImages.push({ file: f, webp: null });
+        handled.add(f);
+      }
+    } else {
       const webp = f.replace(/\.\w+$/, '.webp');
-      return { file: f, webp: names.has(webp) ? webp : null };
-    });
+      if (names.has(webp)) {
+        heroImages.push({ file: f, webp });
+        handled.add(f);
+        handled.add(webp);
+      } else {
+        heroImages.push({ file: f, webp: null });
+        handled.add(f);
+      }
+    }
+  }
 }
 ---
 
