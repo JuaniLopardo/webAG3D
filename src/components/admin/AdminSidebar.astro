@@ -1,11 +1,14 @@
 ---
 // src/components/admin/AdminSidebar.astro
 ---
-<aside class="w-64 bg-secondary text-white flex flex-col transition-all shrink-0">
-  <div class="p-6 border-b border-[#0a5db8]">
+<aside id="admin-sidebar" class="w-64 bg-secondary text-white flex flex-col shrink-0 fixed lg:static inset-y-0 left-0 z-40 -translate-x-full lg:translate-x-0 transition-transform duration-300">
+  <div class="flex items-center justify-between p-4 border-b border-[#0a5db8]">
     <a href="/" class="block transition-transform hover:scale-105">
-      <img src="/logo.png" alt="AG3D Logo" class="h-16 w-auto object-contain brightness-0 invert" />
+      <img src="/logo.png" alt="AG3D Logo" class="h-12 w-auto object-contain brightness-0 invert" />
     </a>
+    <button id="btn-close-sidebar" class="lg:hidden text-white/70 hover:text-white p-1" aria-label="Cerrar menú">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
   </div>
   
   <nav class="flex-1 p-4 space-y-2">
