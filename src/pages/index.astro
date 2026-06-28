@@ -21,11 +21,19 @@ if (fs.existsSync(logosDir)) {
 }
 
 const heroDir = path.resolve('public/assets/hero');
-let heroImages: string[] = [];
+interface HeroImage { file: string; webp: string | null; }
+let heroImages: HeroImage[] = [];
 if (fs.existsSync(heroDir)) {
-  heroImages = fs.readdirSync(heroDir)
+  const files = fs.readdirSync(heroDir)
     .filter((f: string) => /\.(jpg|jpeg|png|webp)$/i.test(f))
     .sort();
+  const names = new Set(files);
+  heroImages = files
+    .filter((f: string) => !f.endsWith('.webp'))
+    .map((f: string) => {
+      const webp = f.replace(/\.\w+$/, '.webp');
+      return { file: f, webp: names.has(webp) ? webp : null };
+    });
 }
 ---
 
@@ -38,23 +46,29 @@ if (fs.existsSync(heroDir)) {
           Explorar Catálogo
         </a>
         <!-- Hero: carrusel flexible -->
-        <div id="hero" class="relative w-full max-w-4xl mx-auto h-64 md:h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
+        <div id="hero" class="relative w-full max-w-4xl mx-auto h-72 md:h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
           {heroImages.length === 0 ? (
             <img src="/assets/hero-placeholder.jpg" class="w-full h-full object-cover opacity-50" alt="Muestra de impresión 3D" />
           ) : heroImages.length === 1 ? (
-            <img src={`/assets/hero/${heroImages[0]}`} class="w-full h-full object-cover" alt="Trabajo AG3D" />
+            <picture>
+              {heroImages[0].webp && <source srcset={`/assets/hero/${heroImages[0].webp}`} type="image/webp" />}
+              <img src={`/assets/hero/${heroImages[0].file}`} class="w-full h-full object-cover" alt="Trabajo AG3D" loading="eager" />
+            </picture>
           ) : (
             <>
-              <div id="hero-track" class="flex h-full transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
+              <div id="hero-track" class="flex h-full transition-transform duration-500 ease-in-out will-change-transform" style="transform: translateX(0%);">
                 {heroImages.map((img, i) => (
                   <div key={i} class="w-full h-full flex-shrink-0">
-                    <img src={`/assets/hero/${img}`} alt={`Trabajo AG3D ${i + 1}`} class="w-full h-full object-cover" />
+                    <picture>
+                      {img.webp && <source srcset={`/assets/hero/${img.webp}`} type="image/webp" />}
+                      <img src={`/assets/hero/${img.file}`} alt={`Trabajo AG3D ${i + 1}`} class="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
+                    </picture>
                   </div>
                 ))}
               </div>
               <div id="hero-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {heroImages.map((_, i) => (
-                  <button key={i} class="hero-dot w-2.5 h-2.5 rounded-full bg-white/60 hover:bg-white/90 transition-colors" data-index={i} aria-label={`Foto ${i + 1}`}></button>
+                  <button key={i} class="hero-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white/90 transition-all duration-200" data-index={i} aria-label={`Foto ${i + 1}`}></button>
                 ))}
               </div>
             </>
@@ -108,6 +122,7 @@ if (fs.existsSync(heroDir)) {
         opacity: 1;
         filter: grayscale(0);
       }
+      #hero-track { will-change: transform; }
     </style>
 
     <section id="nosotros" class="bg-white py-20 scroll-mt-28">
@@ -153,6 +168,7 @@ if (fs.existsSync(heroDir)) {
   (function() {
     const track = document.getElementById('hero-track');
     const dots = document.querySelectorAll('.hero-dot');
+    const hero = document.getElementById('hero');
     if (!track || dots.length === 0) return;
 
     let current = 0;
@@ -160,6 +176,8 @@ if (fs.existsSync(heroDir)) {
     let timeoutId = null;
 
     function goTo(index) {
+      if (index < 0) index = dots.length - 1;
+      if (index >= dots.length) index = 0;
       current = index;
       track.style.transform = `translateX(-${current * 100}%)`;
       dots.forEach((d, i) => {
@@ -169,7 +187,7 @@ if (fs.existsSync(heroDir)) {
       resetAuto();
     }
 
-    function next() { goTo((current + 1) % dots.length); }
+    function next() { goTo(current + 1); }
 
     function resetAuto() {
       clearInterval(interval);
@@ -179,8 +197,39 @@ if (fs.existsSync(heroDir)) {
 
     dots.forEach(d => d.addEventListener('click', () => goTo(Number(d.dataset.index))));
 
-    const hero = document.getElementById('hero');
     hero.addEventListener('mouseenter', () => clearInterval(interval));
     hero.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
+
+    // Swipe táctil
+    let startX = 0;
+    let startY = 0;
+    let isSwiping = false;
+
+    hero.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      isSwiping = false;
+    }, { passive: true });
+
+    hero.addEventListener('touchmove', (e) => {
+      if (!startX) return;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (dx > dy && dx > 10) isSwiping = true;
+    }, { passive: true });
+
+    hero.addEventListener('touchend', (e) => {
+      if (!isSwiping || !startX) return;
+      const endX = e.changedTouches[0].clientX;
+      const diff = startX - endX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) goTo(current + 1);
+        else goTo(current - 1);
+      }
+      startX = 0;
+      startY = 0;
+      isSwiping = false;
+    }, { passive: true });
   })();
 </script>
