@@ -260,6 +260,12 @@ export async function crearPedidoDesdeCarrito() {
 
   if (error) throw error;
   await clearAll();
+
+  // Fire-and-forget: sincronizar con Google Sheets
+  supabase.functions.invoke('sync-to-sheets', {
+    body: { record_id: data.id }
+  }).catch(e => console.warn('Google Sheets sync error:', e));
+
   return data;
 }
 

@@ -1,0 +1,5 @@
+# Configuración de Supabase para Edge Functions
+project_id = "thpgyewhxkczzdtonrfm"
+
+[functions.sync-to-sheets]
+verify_jwt = false  # La función valida su propia auth vía service role
