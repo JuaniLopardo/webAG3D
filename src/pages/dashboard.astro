@@ -518,18 +518,6 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
       return { ok: true, msg: '' };
     }
 
-    btnConfirmar?.addEventListener('click', async () => {
-      const check = validarMinimosCarrito();
-      if (!check.ok) { alert(check.msg); return; }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { window.location.href = '/login'; return; }
-
-      const items = getItems();
-      const email = session.user.email || '';
-      mostrarModalCotizacion(items, email);
-    });
-
     btnVaciar?.addEventListener('click', async () => {
       if (!confirm('¿Vaciar todo el carrito?')) return;
       await clearLocal();
@@ -615,6 +603,18 @@ const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 6000);
       }
+
+      btnConfirmar?.addEventListener('click', async () => {
+        const check = validarMinimosCarrito();
+        if (!check.ok) { alert(check.msg); return; }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+
+        const items = getItems();
+        const email = session.user.email || '';
+        mostrarModalCotizacion(items, email);
+      });
 
       btnCancelarCot?.addEventListener('click', () => {
         ocultarModalCotizacion();
