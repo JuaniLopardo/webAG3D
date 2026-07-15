@@ -96,7 +96,7 @@ async function createJWT(clientEmail: string, privateKey: string, scopes: string
 
   const key = await crypto.subtle.importKey(
     'pkcs8',
-    str2ab(privateKey.replace(/-----BEGIN PRIVATE KEY-----/g, '').replace(/-----END PRIVATE KEY-----/g, '').replace(/\n/g, '')),
+    str2ab(privateKey.replace(/-----BEGIN PRIVATE KEY-----/g, '').replace(/-----END PRIVATE KEY-----/g, '').replace(/\s/g, '')),
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
     ['sign']
