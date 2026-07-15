@@ -1,0 +1,28 @@
+/* empty css               */
+import { c as createComponent } from './astro-component_C7yNNSoH.mjs';
+import 'piccolore';
+import { u as renderHead, w as renderTemplate } from './entrypoint_Hi6hINZd.mjs';
+import 'clsx';
+import { r as renderScript } from './script_iD-g3G7V.mjs';
+
+const $$Registro = createComponent(async ($$result, $$props, $$slots) => {
+  return renderTemplate`<html lang="es"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Registro - AG3D</title>${renderHead()}</head> <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-4"> <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200"> <div class="text-center mb-8"> <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Crear Cuenta</h1> <p class="text-gray-500 mt-2">Únete a AG3D para gestionar tus pedidos personalizados</p> </div> <form id="form-registro" class="space-y-5"> <div> <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo *</label> <input type="text" id="reg-nombre" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="Juan Pérez"> </div> <div> <label class="block text-sm font-semibold text-gray-700 mb-1">Teléfono de Contacto *</label> <input type="tel" id="reg-tel" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="+54 9 11 ..."> </div> <div> <label class="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico *</label> <input type="email" id="reg-email" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" placeholder="tu@email.com"> </div> <div class="grid grid-cols-2 gap-4"> <div> <label class="block text-sm font-semibold text-gray-700 mb-1 text-xs text-gray-500">Empresa (Opcional)</label> <input type="text" id="reg-empresa" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition text-sm" placeholder="AG3D S.A."> </div> <div> <label class="block text-sm font-semibold text-gray-700 mb-1 text-xs text-gray-500">Instagram (Opcional)</label> <input type="text" id="reg-instagram" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition text-sm" placeholder="@usuario"> </div> </div> <div> <label class="block text-sm font-semibold text-gray-700 mb-1">Contraseña *</label> <div class="relative"> <input type="password" id="reg-password" required minlength="6" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition pr-12" placeholder="••••••••"> <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none" data-target="reg-password"> <svg class="eye-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button> </div> </div> <div> <label class="block text-sm font-semibold text-gray-700 mb-1">Confirmar Contraseña</label> <div class="relative"> <input type="password" id="reg-confirm" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition pr-12" placeholder="••••••••"> <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none" data-target="reg-confirm"> <svg class="eye-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button> </div> </div> <p id="mensaje-error" class="text-red-500 text-xs font-semibold text-center h-4"></p> <button type="submit" id="btn-registrar" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-blue-200 active:scale-[0.98]">
+Registrarse
+</button> </form> <div class="mt-8 pt-6 border-t border-gray-100 text-center"> <p class="text-gray-600 text-sm">
+¿Ya tienes una cuenta?
+<a href="/login" class="text-primary font-bold hover:underline">Inicia Sesión</a> </p> <a href="/" class="block mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors">Volver al catálogo</a> </div> </div> ${renderScript($$result, "C:/Users/lopar/OneDrive/Documentos/AG3D WEB/src/pages/registro.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
+}, "C:/Users/lopar/OneDrive/Documentos/AG3D WEB/src/pages/registro.astro", void 0);
+
+const $$file = "C:/Users/lopar/OneDrive/Documentos/AG3D WEB/src/pages/registro.astro";
+const $$url = "/registro";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Registro,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

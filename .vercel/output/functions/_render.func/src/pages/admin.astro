@@ -1,0 +1,109 @@
+---
+// src/pages/admin.astro
+import '../styles/global.css';
+import AdminSidebar from '../components/admin/AdminSidebar.astro';
+import AdminPedidos from '../components/admin/AdminPedidos.astro';
+import AdminProductos from '../components/admin/AdminProductos.astro';
+import AdminUsuarios from '../components/admin/AdminUsuarios.astro';
+import ModalProducto from '../components/admin/ModalProducto.astro';
+import ModalPedidosUsuario from '../components/admin/ModalPedidosUsuario.astro';
+import ModalNuevoPedido from '../components/admin/ModalNuevoPedido.astro';
+import ModalVisorImagen from '../components/admin/ModalVisorImagen.astro';
+---
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Panel de Administración - AG3D</title>
+    <style>
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(1rem); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up { animation: slideUp 0.3s ease-out; }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-800 font-sans flex h-screen overflow-hidden relative">
+    
+    <!-- Overlay para mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
+
+    <!-- Botón hamburguesa para mobile -->
+    <button id="btn-toggle-sidebar" class="lg:hidden fixed top-4 left-4 z-50 bg-secondary text-white p-2.5 rounded-lg shadow-lg" aria-label="Abrir menú">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+
+    <AdminSidebar />
+
+    <main class="flex-1 flex flex-col overflow-y-auto bg-gray-50 p-4 md:p-8 pt-16 lg:pt-8">
+      <AdminPedidos />
+      <AdminProductos />
+      <AdminUsuarios />
+    </main>
+
+    <ModalProducto />
+    <ModalPedidosUsuario />
+    <ModalNuevoPedido />
+    <ModalVisorImagen />
+
+    <script>
+      import { supabase } from '../lib/supabase';
+      import { initSidebar } from '../scripts/admin/sidebar.js';
+      import { initProductos, cargarProductos } from '../scripts/admin/productos.js';
+      import { initPedidos } from '../scripts/admin/pedidos.js';
+      import { initUsuarios } from '../scripts/admin/usuarios.js';
+      import { initNotificaciones } from '../scripts/admin/notificaciones.js';
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+
+        const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', session.user.id).single();
+        if (!perfil || perfil.rol !== 'admin') { window.location.href = '/dashboard'; return; }
+
+        // Inicializar controladores
+        initSidebar();
+        initProductos();
+        initPedidos();
+        initUsuarios();
+        initNotificaciones();
+
+        // Carga inicial
+        cargarProductos();
+
+        // Logout
+        const btnLogout = document.getElementById('btn-logout');
+        btnLogout?.addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/login';
+        });
+
+        // Sidebar toggle para mobile
+        const sidebar = document.getElementById('admin-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const btnToggle = document.getElementById('btn-toggle-sidebar');
+        const btnClose = document.getElementById('btn-close-sidebar');
+
+        function abrirSidebar() {
+          sidebar?.classList.remove('-translate-x-full');
+          overlay?.classList.remove('hidden');
+        }
+        function cerrarSidebar() {
+          sidebar?.classList.add('-translate-x-full');
+          overlay?.classList.add('hidden');
+        }
+
+        btnToggle?.addEventListener('click', abrirSidebar);
+        btnClose?.addEventListener('click', cerrarSidebar);
+        overlay?.addEventListener('click', cerrarSidebar);
+
+        // Cerrar sidebar al cambiar de tab en mobile
+        document.querySelectorAll('#tab-pedidos, #tab-usuarios, #tab-productos').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (window.innerWidth < 1024) cerrarSidebar();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

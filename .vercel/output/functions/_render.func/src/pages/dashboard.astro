@@ -1,0 +1,661 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const WHATSAPP_NUMBER = "5491112345678"; // reemplazar con el real
+---
+
+<Layout title="Mi Panel">
+  <div class="bg-gray-50 min-h-screen">
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+      <div class="flex flex-col md:flex-row gap-6">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="md:w-64 flex-shrink-0">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-5 border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg" id="avatar-inicial">?</div>
+                <div class="min-w-0">
+                  <p class="font-bold text-gray-900 truncate" id="sidebar-nombre">Cargando...</p>
+                  <p class="text-xs text-gray-500 truncate" id="sidebar-email">...</p>
+                </div>
+              </div>
+            </div>
+            <nav class="p-2">
+              <button data-tab="pedidos" class="tab-btn w-full text-left px-4 py-3 rounded-lg font-semibold text-sm flex items-center gap-3 transition bg-primary-light text-primary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                Mis Cotizaciones
+              </button>
+              <button data-tab="datos" class="tab-btn w-full text-left px-4 py-3 rounded-lg font-semibold text-sm flex items-center gap-3 transition text-gray-700 hover:bg-gray-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                Mis Datos
+              </button>
+              <button data-tab="carrito" id="tab-btn-carrito" class="tab-btn w-full text-left px-4 py-3 rounded-lg font-semibold text-sm flex items-center gap-3 transition text-gray-700 hover:bg-gray-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span class="flex-1">Mi Carrito</span>
+                <span id="cart-badge-dash" class="hidden bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">0</span>
+              </button>
+            </nav>
+            <div class="p-2 border-t border-gray-100 space-y-1">
+              <button id="btn-logout-dash" class="w-full text-left px-4 py-3 rounded-lg font-semibold text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ============ CONTENIDO ============ -->
+        <section class="flex-1 min-w-0">
+
+          <!-- ===== TAB: MIS PEDIDOS ===== -->
+          <div id="tab-pedidos" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Mis Cotizaciones</h2>
+                <p class="text-gray-500 text-sm mt-1">Historial de cotizaciones solicitadas.</p>
+              </div>
+
+              <div id="pedidos-loading" class="text-center py-8 text-gray-400">
+                <svg class="animate-spin mx-auto w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                Cargando cotizaciones...
+              </div>
+
+              <div id="pedidos-empty" class="hidden text-center py-12">
+                <svg class="mx-auto w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <p class="text-gray-700 font-semibold">Todavía no tenés cotizaciones</p>
+                <p class="text-gray-500 text-sm mb-4">Cuando solicites una cotización, va a aparecer acá.</p>
+                <a href="/catalogo" class="inline-block px-5 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition">Ir al catálogo</a>
+              </div>
+
+              <div id="pedidos-lista" class="hidden space-y-3"></div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: MIS DATOS ===== -->
+          <div id="tab-datos" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Mis Datos</h2>
+                <p class="text-gray-500 text-sm mt-1">Tus datos registrados en AG3D.</p>
+              </div>
+
+              <div class="space-y-5">
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo</label>
+                  <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-nombre">—</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                      Verificado
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                  <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-telefono">—</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                      Verificado
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                  <div class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    <span class="text-gray-900 font-medium" id="view-email">—</span>
+                  </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100">
+                  <p class="text-sm font-semibold text-gray-900 mb-3">Datos opcionales</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-1">Empresa</label>
+                      <input type="text" id="edit-empresa" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="AG3D S.A." />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-1">Instagram</label>
+                      <input type="text" id="edit-instagram" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition" placeholder="@usuario" />
+                    </div>
+                  </div>
+                  <div class="mt-4 flex justify-end">
+                    <button id="btn-guardar-opcionales" class="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition shadow-sm">Guardar cambios</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: MI CARRITO ===== -->
+          <div id="tab-carrito" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+              <div class="mb-6 flex justify-between items-start gap-4">
+                <div>
+                  <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Mi Carrito</h2>
+                  <p class="text-gray-500 text-sm mt-1">Revisá los productos antes de solicitar tu cotización.</p>
+                </div>
+                <a href="/catalogo" class="text-sm text-primary hover:underline font-semibold flex-shrink-0">+ Seguir comprando</a>
+              </div>
+
+              <div id="carrito-empty" class="hidden text-center py-12">
+                <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <p class="text-gray-700 text-lg mb-2">Tu carrito está vacío</p>
+                <p class="text-gray-500 mb-4">Todavía no agregaste productos.</p>
+                <a href="/catalogo" class="inline-block px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition">Ir al catálogo</a>
+              </div>
+
+              <div id="carrito-lista" class="space-y-3"></div>
+
+              <div id="carrito-footer" class="hidden mt-6 pt-6 border-t border-gray-100">
+                <div id="resumen-minimos" class="mb-4 text-sm text-gray-700 space-y-1"></div>
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between border-t border-gray-100 pt-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Total de unidades</p>
+                    <p id="total-unidades" class="text-3xl font-bold text-gray-900">0</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <button id="btn-vaciar" class="px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-semibold rounded-lg transition">Vaciar carrito</button>
+                    <button id="btn-confirmar" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition shadow-lg">Solicitar cotización</button>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Al confirmar, generamos tu cotización y te llevamos a WhatsApp para coordinar.</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal confirmar cotización -->
+  <div id="modal-confirmar-cotizacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Confirmar cotización</h3>
+      <div id="modal-cot-resumen" class="space-y-3 mb-6 text-sm"></div>
+      <div id="modal-cot-email" class="text-xs text-gray-500 mb-6 p-3 bg-gray-50 rounded-lg"></div>
+      <div class="flex justify-end gap-3">
+        <button id="btn-cancelar-cot" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
+        <button id="btn-enviar-cot" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition shadow">Enviar a WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <script define:vars={{ WHATSAPP_NUMBER }}>
+    window.__WHATSAPP_NUMBER__ = WHATSAPP_NUMBER;
+  </script>
+
+  <script>
+    import { supabase } from '../lib/supabase';
+    import { getCount, getItems, updateCantidad, removeItem, clearLocal, crearPedidoDesdeCarrito, construirMensajeCotizacion, buildWhatsappUrlFromMessage } from '../lib/cart.js';
+
+    // ==== Tabs ====
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function activarTab(tab: string) {
+      tabBtns.forEach(b => {
+        if ((b as HTMLElement).dataset.tab === tab) {
+          b.classList.add('bg-primary-light', 'text-primary');
+          b.classList.remove('text-gray-700', 'hover:bg-gray-100');
+        } else {
+          b.classList.remove('bg-primary-light', 'text-primary');
+          b.classList.add('text-gray-700', 'hover:bg-gray-100');
+        }
+      });
+      tabContents.forEach(c => c.classList.add('hidden'));
+      const target = document.getElementById('tab-' + tab);
+      target?.classList.remove('hidden');
+      if (tab === 'pedidos') cargarPedidos();
+      if (tab === 'carrito') renderCarrito();
+    }
+
+    tabBtns.forEach(b => b.addEventListener('click', () => activarTab((b as HTMLElement).dataset.tab!)));
+
+    // ==== Badge carrito ====
+    function actualizarBadgeDash() {
+      const count = getCount();
+      const badge = document.getElementById('cart-badge-dash');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = String(count);
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+    }
+    window.addEventListener('cart:updated', actualizarBadgeDash);
+
+    const btnLogout = document.getElementById('btn-logout-dash') as HTMLButtonElement;
+
+    const sidebarNombre = document.getElementById('sidebar-nombre') as HTMLParagraphElement;
+    const sidebarEmail = document.getElementById('sidebar-email') as HTMLParagraphElement;
+    const avatarInicial = document.getElementById('avatar-inicial') as HTMLDivElement;
+
+    let userId: string | null = null;
+    let currentTab = 'datos';
+
+    async function cargarPerfil() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/login'; return; }
+      userId = session.user.id;
+
+      const { data: perfil } = await supabase.from('perfiles').select('*').eq('id', userId).single();
+
+      if (perfil?.rol === 'admin') {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const nombre = perfil?.nombre_completo || '';
+      const tel = perfil?.telefono || '';
+      const email = perfil?.email || session.user.email || '';
+      const empresa = perfil?.nombre_empresa || '';
+      const instagram = perfil?.instagram || '';
+
+      document.getElementById('view-nombre')!.textContent = nombre;
+      document.getElementById('view-telefono')!.textContent = tel;
+      document.getElementById('view-email')!.textContent = email;
+      (document.getElementById('edit-empresa') as HTMLInputElement).value = empresa || '';
+      (document.getElementById('edit-instagram') as HTMLInputElement).value = instagram || '';
+
+      sidebarEmail.textContent = email;
+      if (nombre) {
+        sidebarNombre.textContent = nombre;
+        avatarInicial.textContent = nombre.charAt(0).toUpperCase();
+      } else {
+        sidebarNombre.textContent = 'Completá tu perfil';
+        avatarInicial.textContent = '?';
+      }
+    }
+
+    btnLogout.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    });
+
+    // ==== Guardar datos opcionales ====
+    const btnGuardarOpcionales = document.getElementById('btn-guardar-opcionales') as HTMLButtonElement;
+    btnGuardarOpcionales?.addEventListener('click', async () => {
+      if (!userId) return;
+      const empresa = (document.getElementById('edit-empresa') as HTMLInputElement).value.trim();
+      const instagram = (document.getElementById('edit-instagram') as HTMLInputElement).value.trim();
+      btnGuardarOpcionales.disabled = true;
+      btnGuardarOpcionales.textContent = 'Guardando...';
+      const { error } = await supabase
+        .from('perfiles')
+        .update({ nombre_empresa: empresa || null, instagram: instagram || null })
+        .eq('id', userId);
+      btnGuardarOpcionales.disabled = false;
+      btnGuardarOpcionales.textContent = 'Guardar cambios';
+      if (error) {
+        alert('Error al guardar: ' + error.message);
+      } else {
+        const original = btnGuardarOpcionales.textContent;
+        btnGuardarOpcionales.textContent = '✓ Guardado';
+        setTimeout(() => { btnGuardarOpcionales.textContent = original; }, 2000);
+      }
+    });
+
+    // ==== Pedidos ====
+    async function cargarPedidos() {
+      if (!userId) return;
+      const loading = document.getElementById('pedidos-loading');
+      const empty = document.getElementById('pedidos-empty');
+      const lista = document.getElementById('pedidos-lista') as HTMLDivElement;
+
+      loading?.classList.remove('hidden');
+      empty?.classList.add('hidden');
+      lista.classList.add('hidden');
+
+      const { data, error } = await supabase
+        .from('pedidos')
+        .select('*')
+        .eq('cliente_id', userId)
+        .order('fecha_pedido', { ascending: false });
+
+      loading?.classList.add('hidden');
+
+      if (error) {
+        lista.classList.remove('hidden');
+        lista.innerHTML = `<div class="text-center text-red-500 py-6">Error al cargar cotizaciones: ${error.message}</div>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        empty?.classList.remove('hidden');
+        return;
+      }
+
+      const estadoColors: Record<string, string> = {
+        'no confirmado': 'bg-gray-200 text-gray-700',
+        pendiente: 'bg-amber-100 text-amber-700',
+        'en diseno': 'bg-purple-100 text-purple-700',
+        'en produccion': 'bg-blue-100 text-blue-700',
+        'en preparacion para envio': 'bg-indigo-100 text-indigo-700',
+        enviado: 'bg-green-100 text-green-700',
+        recibido: 'bg-green-100 text-green-700',
+        cancelado: 'bg-red-100 text-red-700',
+      };
+
+      const itemsArr = (data || []).map((p: any) => {
+        const items: any[] = Array.isArray(p.items) ? p.items : [];
+        const fecha = p.fecha_pedido ? new Date(p.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+        const totalUnidades = items.reduce((acc, it) => acc + Number(it.cantidad || 0), 0);
+        const estado = String(p.estado || 'no confirmado').toLowerCase();
+        const color = estadoColors[estado] || 'bg-gray-100 text-gray-700';
+        const tracking = p.tracking ? `<span class="text-xs text-gray-500">Tracking: <b>${p.tracking}</b></span>` : '';
+        const esNoConfirmado = estado === 'no confirmado';
+
+        const itemsHtml = items.map((it: any) => {
+          const vars = Object.keys(it.variables || {}).length
+            ? Object.entries(it.variables).map(([k, v]) => `<span class="inline-block text-[10px] bg-gray-100 text-gray-600 rounded px-1.5 py-0.5 mr-1"><b class="capitalize">${k}:</b> ${v}</span>`).join('')
+            : '';
+          return `<div class="flex items-center gap-3 py-2 border-t border-gray-100 first:border-0">
+            <div class="w-10 h-10 rounded bg-gray-100 overflow-hidden flex-shrink-0">
+              ${it.foto_url ? `<img src="${it.foto_url}" class="w-full h-full object-cover">` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">${it.titulo}</p>
+              <div class="mt-0.5">${vars}</div>
+            </div>
+            <div class="text-sm font-bold text-gray-700">x${it.cantidad}</div>
+          </div>`;
+        }).join('');
+
+        const whatsappBtn = esNoConfirmado
+          ? `<button class="btn-reenviar-whatsapp mt-3 w-full bg-primary text-white text-sm font-bold py-2 rounded-lg hover:bg-primary-hover transition" data-id="${p.id}">Enviar a WhatsApp</button>`
+          : '';
+
+        return `
+          <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+            <summary class="cursor-pointer p-4 flex items-center justify-between hover:bg-gray-50 transition">
+              <div>
+                <p class="font-bold text-gray-900">Cotización #${p.id}</p>
+                <p class="text-xs text-gray-500 mt-0.5">${fecha} · ${totalUnidades} unidad${totalUnidades !== 1 ? 'es' : ''}</p>
+              </div>
+              <span class="text-xs font-bold px-3 py-1 rounded-full ${color}">${estado}</span>
+            </summary>
+            <div class="px-4 pb-4 border-t border-gray-100">
+              ${itemsHtml}
+              ${tracking ? `<div class="pt-3 border-t border-gray-100 mt-2">${tracking}</div>` : ''}
+              ${whatsappBtn}
+            </div>
+          </details>
+        `;
+      }).join('');
+
+      lista.classList.remove('hidden');
+      lista.innerHTML = itemsArr;
+    }
+
+    // ==== Carrito (dentro del dashboard) ====
+    const carritoLista = document.getElementById('carrito-lista') as HTMLDivElement;
+    const carritoEmpty = document.getElementById('carrito-empty');
+    const carritoFooter = document.getElementById('carrito-footer');
+    const resumenMinimos = document.getElementById('resumen-minimos') as HTMLDivElement;
+    const totalUnidades = document.getElementById('total-unidades') as HTMLParagraphElement;
+    const btnVaciar = document.getElementById('btn-vaciar');
+    const btnConfirmar = document.getElementById('btn-confirmar') as HTMLButtonElement;
+
+    function renderCarrito() {
+      const items = getItems();
+
+      if (items.length === 0) {
+        carritoEmpty?.classList.remove('hidden');
+        carritoLista.classList.add('hidden');
+        carritoFooter?.classList.add('hidden');
+        return;
+      }
+
+      carritoEmpty?.classList.add('hidden');
+      carritoLista.classList.remove('hidden');
+      carritoFooter?.classList.remove('hidden');
+
+      carritoLista.innerHTML = items.map((it: any) => {
+        const varsTxt = Object.keys(it.variables || {}).length
+          ? Object.entries(it.variables).map(([k, v]) => `<span class="inline-block text-xs bg-gray-100 text-gray-700 rounded px-2 py-0.5 mr-1 mt-1"><b class="capitalize">${k}:</b> ${v}</span>`).join('')
+          : '';
+        return `
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex gap-4 items-start" data-item-id="${it.id}">
+            <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              ${it.foto_url ? `<img src="${it.foto_url}" alt="${it.titulo}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-xs text-gray-400">Sin imagen</div>'}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-gray-900 text-base leading-tight line-clamp-2">${it.titulo}</h3>
+              <div class="mt-1">${varsTxt}</div>
+              <div class="mt-2 text-xs text-gray-500">Mínimo del producto: <b>${it.cantidad_minima}</b> unidades</div>
+            </div>
+            <div class="flex flex-col items-end gap-2 flex-shrink-0">
+              <div class="flex items-center gap-2">
+                <button class="qty-minus w-8 h-8 rounded border border-gray-200 hover:border-primary text-gray-600 font-bold">−</button>
+                <input type="number" min="1" value="${it.cantidad}" class="qty-input w-14 h-8 text-center border border-gray-200 rounded font-semibold">
+                <button class="qty-plus w-8 h-8 rounded border border-gray-200 hover:border-primary text-gray-600 font-bold">+</button>
+              </div>
+              <button class="btn-eliminar text-xs text-red-600 hover:underline">Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Resumen por producto
+      const porProducto: Record<string, any[]> = {};
+      for (const it of items) {
+        const k = String(it.producto_id);
+        if (!porProducto[k]) porProducto[k] = [];
+        porProducto[k].push(it);
+      }
+      const resumenPartes: string[] = [];
+      for (const arr of Object.values(porProducto)) {
+        const min = Math.max(...arr.map((a: any) => a.cantidad_minima));
+        const total = arr.reduce((acc: number, a: any) => acc + Number(a.cantidad || 0), 0);
+        const titulo = arr[0].titulo;
+        if (total >= min) {
+          resumenPartes.push(`<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span><span class="text-green-700"><b>${titulo}</b>: ${total}/${min} ✓</span></div>`);
+        } else {
+          resumenPartes.push(`<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span><span class="text-accent"><b>${titulo}</b>: ${total}/${min} — faltan ${min - total}</span></div>`);
+        }
+      }
+      resumenMinimos.innerHTML = resumenPartes.join('');
+
+      const total = items.reduce((acc: number, it: any) => acc + Number(it.cantidad || 0), 0);
+      totalUnidades.textContent = String(total);
+
+      // === Bind events ===
+      carritoLista.querySelectorAll('[data-item-id]').forEach((card) => {
+        const id = (card as HTMLElement).dataset.itemId!;
+        const input = card.querySelector('.qty-input') as HTMLInputElement;
+        card.querySelector('.qty-minus')?.addEventListener('click', () => {
+          const v = Math.max(1, Number(input.value) - 1);
+          input.value = String(v);
+          updateCantidad(id, v);
+          renderCarrito();
+        });
+        card.querySelector('.qty-plus')?.addEventListener('click', () => {
+          const v = Number(input.value) + 1;
+          input.value = String(v);
+          updateCantidad(id, v);
+          renderCarrito();
+        });
+        input?.addEventListener('change', () => {
+          const v = Math.max(1, Number(input.value) || 1);
+          input.value = String(v);
+          updateCantidad(id, v);
+          renderCarrito();
+        });
+        card.querySelector('.btn-eliminar')?.addEventListener('click', () => {
+          if (confirm('¿Eliminar este item del carrito?')) {
+            removeItem(id);
+            renderCarrito();
+          }
+        });
+      });
+    }
+
+    function validarMinimosCarrito(): { ok: boolean; msg: string } {
+      const items = getItems();
+      const porProducto: Record<string, any[]> = {};
+      for (const it of items) {
+        const k = String(it.producto_id);
+        if (!porProducto[k]) porProducto[k] = [];
+        porProducto[k].push(it);
+      }
+      for (const arr of Object.values(porProducto)) {
+        const min = Math.max(...arr.map((a: any) => a.cantidad_minima));
+        const total = arr.reduce((acc: number, a: any) => acc + Number(a.cantidad || 0), 0);
+        if (total < min) {
+          return { ok: false, msg: `"${arr[0].titulo}" requiere ${min} unidades. Tenés ${total}.` };
+        }
+      }
+      return { ok: true, msg: '' };
+    }
+
+    btnVaciar?.addEventListener('click', async () => {
+      if (!confirm('¿Vaciar todo el carrito?')) return;
+      await clearLocal();
+      renderCarrito();
+    });
+
+    // Re-render del carrito cuando se actualiza desde otra parte
+    window.addEventListener('cart:updated', () => {
+      actualizarBadgeDash();
+      renderCarrito();
+    });
+
+    // ==== Init ====
+    document.addEventListener('DOMContentLoaded', async () => {
+      await cargarPerfil();
+      actualizarBadgeDash();
+      renderCarrito();
+
+      // Soporte ?tab=carrito, ?tab=datos o ?tab=pedidos en la URL
+      // Default: "pedidos"
+
+      const modalCot = document.getElementById('modal-confirmar-cotizacion');
+      const modalResumen = document.getElementById('modal-cot-resumen');
+      const modalEmail = document.getElementById('modal-cot-email');
+      const btnCancelarCot = document.getElementById('btn-cancelar-cot');
+      const btnEnviarCot = document.getElementById('btn-enviar-cot');
+      let mensajeCotizacionPendiente = '';
+
+      function mostrarModalCotizacion(items, email) {
+        mensajeCotizacionPendiente = construirMensajeCotizacion(items, email);
+        modalResumen.innerHTML = items.map((it, i) => {
+          const varsTxt = Object.keys(it.variables || {}).length
+            ? Object.entries(it.variables).map(([k, v]) => `<span class="inline-block text-[10px] bg-gray-100 text-gray-600 rounded px-1.5 py-0.5 mr-1"><b class="capitalize">${k}:</b> ${v}</span>`).join('')
+            : '';
+          return `<div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-900 text-sm truncate">${it.titulo}</p>
+              <div class="mt-0.5">${varsTxt}</div>
+            </div>
+            <span class="font-bold text-gray-700 text-sm ml-3">x${it.cantidad}</span>
+          </div>`;
+        }).join('');
+        modalEmail.innerHTML = `<span class="font-semibold">Email:</span> ${email}`;
+        modalCot.classList.remove('hidden');
+        modalCot.classList.add('flex');
+      }
+
+      function ocultarModalCotizacion() {
+        modalCot.classList.add('hidden');
+        modalCot.classList.remove('flex');
+      }
+
+      async function reenviarWhatsApp(orderId: number) {
+        const { data: order } = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+
+        if (!order || !Array.isArray(order.items)) return;
+
+        const email = (document.getElementById('view-email') as HTMLSpanElement)?.textContent || '';
+        const mensaje = construirMensajeCotizacion(order.items, email);
+        const waUrl = buildWhatsappUrlFromMessage(mensaje, (window as any).__WHATSAPP_NUMBER__);
+        if (waUrl) window.open(waUrl, '_blank');
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.btn-reenviar-whatsapp') as HTMLElement;
+        if (btn) {
+          const id = Number(btn.dataset.id);
+          if (id) reenviarWhatsApp(id);
+        }
+      });
+
+      function mostrarToastExito() {
+        const existing = document.getElementById('toast-exito');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.id = 'toast-exito';
+        toast.className = 'fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-bold z-50 animate-slide-up';
+        toast.innerHTML = '✅ Cotización creada. Enviala por WhatsApp desde "Mis Cotizaciones".';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 6000);
+      }
+
+      btnConfirmar?.addEventListener('click', async () => {
+        const check = validarMinimosCarrito();
+        if (!check.ok) { alert(check.msg); return; }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+
+        const items = getItems();
+        const email = session.user.email || '';
+        mostrarModalCotizacion(items, email);
+      });
+
+      btnCancelarCot?.addEventListener('click', () => {
+        ocultarModalCotizacion();
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = 'Solicitar cotización';
+      });
+
+      btnEnviarCot?.addEventListener('click', async () => {
+        btnEnviarCot.disabled = true;
+        btnEnviarCot.textContent = 'Enviando...';
+        ocultarModalCotizacion();
+        btnConfirmar.disabled = true;
+        btnConfirmar.textContent = 'Procesando...';
+        try {
+          await crearPedidoDesdeCarrito();
+          const waUrl = buildWhatsappUrlFromMessage(mensajeCotizacionPendiente, (window as any).__WHATSAPP_NUMBER__);
+          if (waUrl) window.open(waUrl, '_blank');
+          mostrarToastExito();
+          activarTab('pedidos');
+        } catch (e: any) {
+          alert('Error al crear cotización: ' + (e.message || e));
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = 'Solicitar cotización';
+        }
+        btnEnviarCot.disabled = false;
+        btnEnviarCot.textContent = 'Enviar a WhatsApp';
+      });
+      const params = new URLSearchParams(location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'carrito' || tabParam === 'datos') {
+        activarTab(tabParam);
+      } else {
+        activarTab('pedidos');
+      }
+    });
+  </script>
+  <style>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(1rem); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.3s ease-out; }
+  </style>
+</Layout>
