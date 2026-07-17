@@ -2,7 +2,7 @@
 // Cache del rol del usuario actual, con invalidación automática en login/logout.
 import { supabase } from './supabase.js';
 
-let _role = null;       // 'admin' | 'user' | null
+let _role = null;       // 'admin' | 'cliente' | null
 let _resolved = false;
 let _inflight = null;
 
@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Devuelve el rol del usuario actual: 'admin' | 'user' | null.
+ * Devuelve el rol del usuario actual: 'admin' | 'cliente' | null.
  * Cachea el resultado hasta que cambie la sesión.
  */
 export async function getUserRole() {
@@ -32,7 +32,7 @@ export async function getUserRole() {
       .select('rol')
       .eq('id', session.user.id)
       .single();
-    _role = perfil?.rol || 'user';
+    _role = perfil?.rol || 'cliente';
     _resolved = true;
     return _role;
   })();

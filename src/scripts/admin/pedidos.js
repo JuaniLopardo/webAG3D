@@ -51,7 +51,7 @@ export async function cargarPedidos() {
 
   if (error || !orders) return;
 
-  const statuses = ['no confirmado', 'Recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado'];
+  const statuses = ['no confirmado', 'En preparación', 'pendiente', 'Recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado', 'cancelado'];
 
   pedidosMainContainer.innerHTML = orders.map(order => {
     const fecha = new Date(order.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
