@@ -51,7 +51,7 @@ export async function cargarPedidos() {
 
   if (error || !orders) return;
 
-  const statuses = ['No confirmado', 'En preparación', 'Pendiente', 'Recibido', 'En diseño', 'En producción', 'En preparación para envío', 'Enviado', 'Cancelado'];
+  const statuses = ['no confirmado', 'en preparación', 'pendiente', 'recibido', 'en diseño', 'en producción', 'en preparación para envío', 'enviado', 'cancelado'];
 
   pedidosMainContainer.innerHTML = orders.map(order => {
     const fecha = new Date(order.fecha_pedido).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -249,7 +249,7 @@ export function initPedidos() {
 
       const { error } = await supabase.from('pedidos').insert({
         cliente_id: selectClienteManual.value,
-        estado: 'Recibido',
+        estado: 'recibido',
         items: items,
         fecha_pedido: new Date().toISOString()
       });
