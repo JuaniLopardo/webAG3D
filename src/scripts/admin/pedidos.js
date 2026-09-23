@@ -1,4 +1,5 @@
 import { adminState } from './state.js';
+import { cargarUsuarios } from './usuarios.js';
 
 const supabase = adminState.supabase;
 
@@ -12,6 +13,10 @@ const formNuevoPedido = document.getElementById('form-nuevo-pedido');
 const itemsManualContainer = document.getElementById('items-manual-container');
 const btnAddItemManual = document.getElementById('btn-add-item-manual');
 const selectClienteManual = document.getElementById('new-order-cliente');
+const nuevoClienteFields = document.getElementById('nuevo-cliente-fields');
+const inputNombreNuevo = document.getElementById('new-client-nombre');
+const inputEmailNuevo = document.getElementById('new-client-email');
+const inputTelefonoNuevo = document.getElementById('new-client-telefono');
 
 const inputFechaDesde = document.getElementById('filter-fecha-desde');
 const inputFechaHasta = document.getElementById('filter-fecha-hasta');
@@ -184,9 +189,11 @@ export function initPedidos() {
   if (btnNuevoPedidoManual) {
     btnNuevoPedidoManual.addEventListener('click', () => {
       if (!selectClienteManual) return;
-      // Poblar clientes
-      selectClienteManual.innerHTML = '<option value="">Selecciona un cliente</option>' + 
+      selectClienteManual.innerHTML = '<option value="nuevo">— Nuevo Cliente —</option>' + 
+        '<option value="">─── Existente ───</option>' + 
         adminState.usuarios.map(u => `<option value="${u.id}">${u.email} (${u.nombre_completo || 'Sin nombre'})</option>`).join('');
+      
+      if (nuevoClienteFields) nuevoClienteFields.classList.add('hidden');
       
       if (itemsManualContainer) {
         itemsManualContainer.innerHTML = '';
@@ -195,6 +202,12 @@ export function initPedidos() {
       modalPedidoManual?.classList.replace('hidden', 'flex');
     });
   }
+
+  selectClienteManual?.addEventListener('change', () => {
+    if (nuevoClienteFields) {
+      nuevoClienteFields.classList.toggle('hidden', selectClienteManual.value !== 'nuevo');
+    }
+  });
 
   if (btnCloseOrderModal) {
     btnCloseOrderModal.addEventListener('click', () => modalPedidoManual?.classList.replace('flex', 'hidden'));
@@ -247,8 +260,44 @@ export function initPedidos() {
         }
       });
 
+      let clienteId = selectClienteManual.value;
+
+      if (clienteId === 'nuevo') {
+        const nombre = inputNombreNuevo?.value.trim();
+        const email = inputEmailNuevo?.value.trim();
+        const telefono = inputTelefonoNuevo?.value.trim();
+
+        if (!nombre || !email || !telefono) {
+          alert('Completa todos los campos del nuevo cliente.');
+          btnSave.disabled = false;
+          btnSave.textContent = 'Crear Cotización';
+          return;
+        }
+
+        const newId = crypto.randomUUID();
+
+        const { error: perfilError } = await supabase.from('perfiles').insert({
+          id: newId,
+          email: email,
+          nombre_completo: nombre,
+          telefono: telefono,
+          rol: 'cliente'
+        });
+
+        if (perfilError) {
+          alert('Error al crear el cliente: ' + perfilError.message);
+          btnSave.disabled = false;
+          btnSave.textContent = 'Crear Cotización';
+          return;
+        }
+
+        clienteId = newId;
+
+        await cargarUsuarios();
+      }
+
       const { error } = await supabase.from('pedidos').insert({
-        cliente_id: selectClienteManual.value,
+        cliente_id: clienteId,
         estado: 'recibido',
         items: items,
         fecha_pedido: new Date().toISOString()
