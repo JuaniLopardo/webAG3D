@@ -13,10 +13,6 @@ const formNuevoPedido = document.getElementById('form-nuevo-pedido');
 const itemsManualContainer = document.getElementById('items-manual-container');
 const btnAddItemManual = document.getElementById('btn-add-item-manual');
 const selectClienteManual = document.getElementById('new-order-cliente');
-const nuevoClienteFields = document.getElementById('nuevo-cliente-fields');
-const inputNombreNuevo = document.getElementById('new-client-nombre');
-const inputEmailNuevo = document.getElementById('new-client-email');
-const inputTelefonoNuevo = document.getElementById('new-client-telefono');
 
 const inputFechaDesde = document.getElementById('filter-fecha-desde');
 const inputFechaHasta = document.getElementById('filter-fecha-hasta');
@@ -186,6 +182,11 @@ function crearFilaItemManual() {
 }
 
 export function initPedidos() {
+  const _nuevoClienteFields = document.getElementById('nuevo-cliente-fields');
+  const _inputNombreNuevo = document.getElementById('new-client-nombre');
+  const _inputEmailNuevo = document.getElementById('new-client-email');
+  const _inputTelefonoNuevo = document.getElementById('new-client-telefono');
+
   if (btnNuevoPedidoManual) {
     btnNuevoPedidoManual.addEventListener('click', () => {
       if (!selectClienteManual) return;
@@ -193,7 +194,7 @@ export function initPedidos() {
         '<option value="">─── Existente ───</option>' + 
         adminState.usuarios.map(u => `<option value="${u.id}">${u.email} (${u.nombre_completo || 'Sin nombre'})</option>`).join('');
       
-      if (nuevoClienteFields) nuevoClienteFields.classList.add('hidden');
+      if (_nuevoClienteFields) _nuevoClienteFields.classList.add('hidden');
       
       if (itemsManualContainer) {
         itemsManualContainer.innerHTML = '';
@@ -204,8 +205,8 @@ export function initPedidos() {
   }
 
   selectClienteManual?.addEventListener('change', () => {
-    if (nuevoClienteFields) {
-      nuevoClienteFields.classList.toggle('hidden', selectClienteManual.value !== 'nuevo');
+    if (_nuevoClienteFields) {
+      _nuevoClienteFields.classList.toggle('hidden', selectClienteManual.value !== 'nuevo');
     }
   });
 
@@ -263,9 +264,9 @@ export function initPedidos() {
       let clienteId = selectClienteManual.value;
 
       if (clienteId === 'nuevo') {
-        const nombre = inputNombreNuevo?.value.trim();
-        const email = inputEmailNuevo?.value.trim();
-        const telefono = inputTelefonoNuevo?.value.trim();
+        const nombre = _inputNombreNuevo?.value.trim();
+        const email = _inputEmailNuevo?.value.trim();
+        const telefono = _inputTelefonoNuevo?.value.trim();
 
         if (!nombre || !email || !telefono) {
           alert('Completa todos los campos del nuevo cliente.');
